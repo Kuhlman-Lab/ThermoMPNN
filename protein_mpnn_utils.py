@@ -1058,10 +1058,12 @@ class ProteinMPNN(nn.Module):
 
         chain_M = chain_M*mask #update chain_M to include missing regions
         if not use_input_decoding_order:
-            decoding_order = torch.argsort((chain_M+0.0001)*(torch.abs(randn))) #[numbers will be smaller for places where chain_M = 0.0 and higher for places where chain_M = 1.0]
+            decoding_order = torch.tensor([list(range(X.size(1)))], device=device) # torch.argsort((chain_M+0.0001)*(torch.abs(randn))) #[numbers will be smaller for places where chain_M = 0.0 and higher for places where chain_M = 1.0]
         mask_size = E_idx.shape[1]
         permutation_matrix_reverse = torch.nn.functional.one_hot(decoding_order, num_classes=mask_size).float()
         order_mask_backward = torch.einsum('ij, biq, bjp->bqp',(1-torch.triu(torch.ones(mask_size,mask_size, device=device))), permutation_matrix_reverse, permutation_matrix_reverse)
+        # make it know the identify of everything but current AA
+        order_mask_backward = torch.ones_like(order_mask_backward) - torch.unsqueeze(torch.eye(mask_size, mask_size, device=device), 0)
         mask_attend = torch.gather(order_mask_backward, 2, E_idx).unsqueeze(-1)
         mask_1D = mask.view([mask.size(0), mask.size(1), 1, 1])
         mask_bw = mask_1D * mask_attend
@@ -1073,6 +1075,9 @@ class ProteinMPNN(nn.Module):
             h_ESV = cat_neighbors_nodes(h_V, h_ES, E_idx)
             h_ESV = mask_bw * h_ESV + h_EXV_encoder_fw
             h_V = layer(h_V, h_ESV, mask)
+
+        # yeet early and return hidden layer
+        return h_V
 
         logits = self.W_out(h_V)
         log_probs = F.log_softmax(logits, dim=-1)
@@ -1175,7 +1180,7 @@ class ProteinMPNN(nn.Module):
         h_E = self.W_e(E)
         # Encoder is unmasked self-attention
         mask_attend = gather_nodes(mask.unsqueeze(-1),  E_idx).squeeze(-1)
-        mask_attend = mask.unsqueeze(-1) * mask_attend
+        mask_attend = mask.unsqueeze(-1) * mask_attendE
         for layer in self.encoder_layers:
             h_V, h_E = layer(h_V, h_E, E_idx, mask, mask_attend)
 
