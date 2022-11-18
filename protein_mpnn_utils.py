@@ -1077,7 +1077,7 @@ class ProteinMPNN(nn.Module):
             h_V = layer(h_V, h_ESV, mask)
 
         # yeet early and return hidden layer
-        return h_V
+        return h_V, h_S
 
         logits = self.W_out(h_V)
         log_probs = F.log_softmax(logits, dim=-1)

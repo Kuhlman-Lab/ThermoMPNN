@@ -1,2 +1,8 @@
+loss:
+  ddG_lambda: 0.95
+  dTm_lambda: 0.05
+
+learn_rate: 0.01
+
 platform:
   cache_dir: "/home/boris/Data/enzyme_stability_cache"

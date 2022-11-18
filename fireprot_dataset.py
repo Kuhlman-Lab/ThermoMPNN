@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 import os
 import pickle
-from typing import Optional
+from typing import Optional, Sequence
 import torch
 import pandas as pd
 from Bio import pairwise2
+from terrace.batch import Batchable, make_batch
 
 from cache import cache
 from protein_mpnn_utils import parse_PDB
@@ -14,7 +15,7 @@ def parse_pdb_cached(cfg, pdb_file):
     return parse_PDB(pdb_file)
 
 @dataclass
-class Mutation:
+class Mutation(Batchable):
     position: int
     mutation: str
     ddG: Optional[float] = None
@@ -95,8 +96,8 @@ class FireProtDataset(torch.utils.data.Dataset):
         return len(self.wt_sequences)
 
     def __getitem__(self, index):
-        if index >= len(self):
-            raise StopIteration()
+        # if index >= len(self):
+        #    raise StopIteration()
 
         seq = self.wt_sequences[index]
         data = self.seq_to_data[seq]
@@ -120,7 +121,9 @@ class FireProtDataset(torch.utils.data.Dataset):
             # print(row.wild_type, pdb[0]['seq'][pdb_idx])
 
             assert pdb[0]['seq'][pdb_idx] == row.wild_type
-            mut = Mutation(pdb_idx, row.mutation, row.ddG, row.dTm)
+            ddG = None if row.ddG is None else torch.tensor([row.ddG], dtype=torch.float32)
+            dTm = None if row.dTm is None else torch.tensor([row.dTm], dtype=torch.float32)
+            mut = Mutation(pdb_idx, row.mutation, ddG, dTm)
             mutations.append(mut)
 
         return pdb, mutations
