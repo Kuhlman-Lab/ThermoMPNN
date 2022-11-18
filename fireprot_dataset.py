@@ -4,6 +4,7 @@ import pickle
 from typing import Optional
 import torch
 import pandas as pd
+from Bio import pairwise2
 
 from cache import cache
 from protein_mpnn_utils import parse_PDB
@@ -18,6 +19,33 @@ class Mutation:
     mutation: str
     ddG: Optional[float] = None
     dTm: Optional[float] = None
+
+def seq1_index_to_seq2_index(align, index):
+    cur_seq1_index = 0
+
+    # first find the aligned index
+    for aln_idx, char in enumerate(align.seqA):
+        if char != '-':
+            cur_seq1_index += 1
+        if cur_seq1_index > index:
+            break
+    
+    # now the index in seq 2 cooresponding to aligned index
+    if align.seqB[aln_idx] == '-':
+        return None
+
+    # print(pairwise2.format_alignment(*align))
+
+    seq2_to_idx = align.seqB[:aln_idx+1]
+    seq2_idx = aln_idx
+    for char in seq2_to_idx:
+        if char == '-':
+            seq2_idx -= 1
+    
+    if seq2_idx < 0:
+        return None
+
+    return seq2_idx
 
 class FireProtDataset(torch.utils.data.Dataset):
 
@@ -76,14 +104,23 @@ class FireProtDataset(torch.utils.data.Dataset):
         pdb_file = f"data/v1_dataset_11152022/pdbs/{data.pdb_id_corrected[0]}.pdb1"
         pdb = parse_pdb_cached(self.cfg, pdb_file)
 
-        print(pdb[0]['seq'])
-        print(seq)
-
-        assert len(pdb[0]['seq']) == len(seq)
+        # assert len(pdb[0]['seq']) == len(seq)
+        align, *rest = pairwise2.align.globalxx(seq, pdb[0]['seq'].replace("-", "X"))
 
         mutations = []
         for i, row in data.iterrows():
-            mut = Mutation(row.position_corrected, row.mutation, row.ddG, row.dTm)
+            pdb_idx = seq1_index_to_seq2_index(align, row.position_corrected)
+            # we don't have crystal data for this mutation alas
+            if pdb_idx is None:
+                continue
+            assert seq[row.position_corrected] == row.wild_type
+            # print(seq)
+            # print(pdb[0]['seq'])
+            # print(row.position_corrected, pdb_idx)
+            # print(row.wild_type, pdb[0]['seq'][pdb_idx])
+
+            assert pdb[0]['seq'][pdb_idx] == row.wild_type
+            mut = Mutation(pdb_idx, row.mutation, row.ddG, row.dTm)
             mutations.append(mut)
 
         return pdb, mutations
