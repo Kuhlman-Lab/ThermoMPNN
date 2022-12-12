@@ -1069,15 +1069,17 @@ class ProteinMPNN(nn.Module):
         mask_bw = mask_1D * mask_attend
         mask_fw = mask_1D * (1. - mask_attend)
 
+        all_hidden = []
         h_EXV_encoder_fw = mask_fw * h_EXV_encoder
         for layer in self.decoder_layers:
             # Masked positions attend to encoder information, unmasked see. 
             h_ESV = cat_neighbors_nodes(h_V, h_ES, E_idx)
             h_ESV = mask_bw * h_ESV + h_EXV_encoder_fw
             h_V = layer(h_V, h_ESV, mask)
+            all_hidden.append(h_V)
 
         # yeet early and return hidden layer
-        return h_V, h_S
+        return list(reversed(all_hidden)), h_S
 
         logits = self.W_out(h_V)
         log_probs = F.log_softmax(logits, dim=-1)

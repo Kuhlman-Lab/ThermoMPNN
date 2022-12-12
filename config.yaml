@@ -1,8 +1,17 @@
+project: enzyme-stability
+
 loss:
   ddG_lambda: 0.95
   dTm_lambda: 0.05
 
 learn_rate: 0.01
+
+model:
+  type: transfer
+  hidden_dims: [50, 20]
+  subtract_mut: true
+  num_final_layers: 3
+
 
 platform:
   cache_dir: "/home/boris/Data/enzyme_stability_cache"

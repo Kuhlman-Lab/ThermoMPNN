@@ -23,27 +23,67 @@ HIDDEN_DIM = 128
 EMBED_DIM = 128
 VOCAB_DIM = 21
 alphabet = 'ACDEFGHIKLMNPQRSTVWYX'
+
+MLP = True
+SUBTRACT_MUT = True
+
 class TransferModel(nn.Module):
 
-    def __init__(self):
+    def __init__(self, cfg):
         super().__init__()
+        self.hidden_dims = list(cfg.model.hidden_dims)
+        self.subtract_mut = cfg.model.subtract_mut
+        self.num_final_layers = cfg.model.num_final_layers
         self.prot_mpnn = get_protein_mpnn()
-        self.ddg_out = nn.Linear(HIDDEN_DIM+EMBED_DIM, VOCAB_DIM)
-        self.dtm_out = nn.Linear(HIDDEN_DIM+EMBED_DIM, VOCAB_DIM)
+
+
+        hid_sizes = [ HIDDEN_DIM*self.num_final_layers + EMBED_DIM ]
+        hid_sizes += self.hidden_dims
+        hid_sizes += [ VOCAB_DIM ]
+
+        self.both_out = nn.Sequential()
+        for sz1, sz2 in zip(hid_sizes, hid_sizes[1:]):
+            self.both_out.append(nn.ReLU())
+            self.both_out.append(nn.Linear(sz1, sz2))
+
+        self.ddg_out = nn.Linear(1, 1)
+        self.dtm_out = nn.Linear(1, 1)
 
     def forward(self, pdb, mutations):
+        
         device = next(self.parameters()).device
         X, S, mask, lengths, chain_M, chain_encoding_all, chain_list_list, visible_list_list, masked_list_list, masked_chain_length_list_list, chain_M_pos, omit_AA_mask, residue_idx, dihedral_mask, tied_pos_list_of_lists_list, pssm_coef, pssm_bias, pssm_log_odds_all, bias_by_res_all, tied_beta = tied_featurize([pdb[0]], device, None, None, None, None, None, None, ca_only=False)
-        mpnn_hid, mpnn_embed = self.prot_mpnn(X, S, mask, chain_M*chain_M_pos, residue_idx, chain_encoding_all, None)
+        all_mpnn_hid, mpnn_embed = self.prot_mpnn(X, S, mask, chain_M*chain_M_pos, residue_idx, chain_encoding_all, None)
+        mpnn_hid = torch.cat(all_mpnn_hid[:self.num_final_layers], -1)
+
         out = []
         for mut in mutations:
+            # hacky fix to account for deletions (which we don't support atm)
+            if mut is None:
+                out.append(None)
+                continue
+
             aa_index = alphabet.index(mut.mutation)
+            wt_aa_index = alphabet.index(mut.wildtype)
+
             hid = mpnn_hid[0][mut.position]
             embed = mpnn_embed[0][mut.position]
             lin_input = torch.cat([hid, embed], -1)
+            both_input = torch.unsqueeze(self.both_out(lin_input), -1)
+
+            ddg_out = self.ddg_out(both_input)
+            dTm_out = self.dtm_out(both_input)
+
+            if self.subtract_mut:
+                ddg = ddg_out[aa_index][0] - ddg_out[wt_aa_index][0]
+                dtm = dTm_out[aa_index][0] - dTm_out[wt_aa_index][0]
+            else:
+                ddg = ddg_out[aa_index][0]
+                dtm = dTm_out[aa_index][0]
+
             out.append({
-                "ddG": torch.unsqueeze(self.ddg_out(lin_input)[aa_index], 0),
-                "dTm": torch.unsqueeze(self.dtm_out(lin_input)[aa_index], 0)
+                "ddG": torch.unsqueeze(ddg, 0),
+                "dTm": torch.unsqueeze(dtm, 0)
             })
 
         return out

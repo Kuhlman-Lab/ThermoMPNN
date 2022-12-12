@@ -17,6 +17,7 @@ def parse_pdb_cached(cfg, pdb_file):
 @dataclass
 class Mutation(Batchable):
     position: int
+    wildtype: str
     mutation: str
     ddG: Optional[float] = None
     dTm: Optional[float] = None
@@ -123,8 +124,13 @@ class FireProtDataset(torch.utils.data.Dataset):
             assert pdb[0]['seq'][pdb_idx] == row.wild_type
             ddG = None if row.ddG is None else torch.tensor([row.ddG], dtype=torch.float32)
             dTm = None if row.dTm is None else torch.tensor([row.dTm], dtype=torch.float32)
-            mut = Mutation(pdb_idx, row.mutation, ddG, dTm)
+            mut = Mutation(pdb_idx, row.wild_type, row.mutation, ddG, dTm)
             mutations.append(mut)
+
+            if self.split == "train":
+                zero = torch.tensor([0.0], dtype=torch.float32)
+                wt = Mutation(pdb_idx, row.wild_type, row.wild_type, zero, zero)
+                mutations.append(wt)
 
         return pdb, mutations
     

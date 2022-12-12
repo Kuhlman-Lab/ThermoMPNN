@@ -130,6 +130,8 @@ dmypy.json
 
 data
 lightning_logs
+checkpoints
+wandb
 
 # pymol smh
 *.cif
