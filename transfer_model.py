@@ -34,10 +34,11 @@ class TransferModel(nn.Module):
         self.hidden_dims = list(cfg.model.hidden_dims)
         self.subtract_mut = cfg.model.subtract_mut
         self.num_final_layers = cfg.model.num_final_layers
+        self.use_msa = cfg.model.use_msa
         self.prot_mpnn = get_protein_mpnn()
 
-
-        hid_sizes = [ HIDDEN_DIM*self.num_final_layers + EMBED_DIM ]
+        extra_size = len(alphabet) if self.use_msa else 0
+        hid_sizes = [ HIDDEN_DIM*self.num_final_layers + EMBED_DIM  + extra_size]
         hid_sizes += self.hidden_dims
         hid_sizes += [ VOCAB_DIM ]
 
@@ -68,7 +69,10 @@ class TransferModel(nn.Module):
 
             hid = mpnn_hid[0][mut.position]
             embed = mpnn_embed[0][mut.position]
-            lin_input = torch.cat([hid, embed], -1)
+            inputs = [hid, embed]
+            if self.use_msa:
+                inputs.append(mut.msa_hist)
+            lin_input = torch.cat(inputs, -1)
             both_input = torch.unsqueeze(self.both_out(lin_input), -1)
 
             ddg_out = self.ddg_out(both_input)
