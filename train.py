@@ -54,7 +54,7 @@ class TransferModelPL(pl.LightningModule):
                 ddg_mses.append(F.mse_loss(out["ddG"], mut.ddG))
                 for metric in self.metrics[f"{prefix}_metrics"]["ddG"].values():
                     metric.update(out["ddG"], mut.ddG)
-            elif mut.dTm is not None:
+            if mut.dTm is not None:
                 dtm_mses.append(F.mse_loss(out["dTm"], mut.dTm))
                 for metric in self.metrics[f"{prefix}_metrics"]["dTm"].values():
                     metric.update(out["dTm"], mut.dTm)
