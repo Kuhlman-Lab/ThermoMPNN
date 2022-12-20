@@ -3,7 +3,7 @@ import torch
 from omegaconf import OmegaConf
 import pandas as pd
 from train import TransferModelPL
-from fireprot_dataset import Mutation
+from fireprot_dataset import Mutation, get_msa_hist
 from protein_mpnn_utils import loss_nll, loss_smoothed, gather_edges, gather_nodes, gather_nodes_t, cat_neighbors_nodes, _scores, _S_to_seq, tied_featurize, parse_PDB
 
 def submit(cfg):
@@ -13,6 +13,11 @@ def submit(cfg):
     wt_seq = pdb[0]['seq']
     mutations = []
     df = pd.read_csv("data/test.csv")
+
+    msa_file = "data/msas/kaggle.a3m"
+    all_msa_hist, msa_seq = get_msa_hist(cfg, msa_file)
+    assert msa_seq == wt_seq
+
     for i, row in df.iterrows():
         if len(row.protein_sequence) < len(wt_seq):
             mutations.append(None)
@@ -25,7 +30,8 @@ def submit(cfg):
         idx = eq.index(True)
         wt_aa = wt_seq[idx]
         mut_aa = row.protein_sequence[idx]
-        mutation = Mutation(position=idx, wildtype=wt_aa, mutation=mut_aa)
+        msa_hist = all_msa_hist[idx]
+        mutation = Mutation(position=idx, wildtype=wt_aa, mutation=mut_aa, msa_hist=msa_hist)
         mutations.append(mutation)
 
     with torch.no_grad():

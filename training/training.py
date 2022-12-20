@@ -49,7 +49,7 @@ def main(args):
         "TEST"    : f"{data_path}/test_clusters.txt",
         "DIR"     : f"{data_path}",
         "DATCUT"  : "2030-Jan-01",
-        "RESCUT"  : args.rescut, #resolution cutoff for PDBs
+        "RESCUT"  : args.rescut, #resolution cutoff for PDBs (3.5)
         "HOMO"    : 0.70 #min seq.id. to detect homo chains
     }
 

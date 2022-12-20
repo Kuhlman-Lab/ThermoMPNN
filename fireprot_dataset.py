@@ -6,7 +6,6 @@ from typing import Optional, Sequence
 import torch
 import pandas as pd
 from Bio import pairwise2
-from terrace.batch import Batchable, make_batch
 
 from cache import cache
 from protein_mpnn_utils import parse_PDB
@@ -16,7 +15,7 @@ def parse_pdb_cached(cfg, pdb_file):
     return parse_PDB(pdb_file)
 
 @dataclass
-class Mutation(Batchable):
+class Mutation:
     position: int
     wildtype: str
     mutation: str
@@ -52,7 +51,7 @@ def seq1_index_to_seq2_index(align, index):
     return seq2_idx
 
 alphabet = 'ACDEFGHIKLMNPQRSTVWY-'
-@cache(lambda cfg, msa_file: msa_file)
+@cache(lambda cfg, msa_file: msa_file, disable=False)
 def get_msa_hist(cfg, msa_file):
     # print(msa_file)
     first_seq = None
@@ -61,7 +60,7 @@ def get_msa_hist(cfg, msa_file):
         for line in f.readlines():
             if line.startswith(">"): continue
             if counts is None:
-                first_seq = line
+                first_seq = line.strip()
                 counts = [ defaultdict(int) for c in line ]
             for i, c in enumerate(line.upper()):
                 if i > len(counts) - 1:

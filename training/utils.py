@@ -6,6 +6,7 @@ import numpy as np
 import time
 import random
 import os
+from tqdm import tqdm
 
 class StructureDataset():
     def __init__(self, pdb_dict_list, verbose=True, truncate=None, max_length=100,
@@ -139,7 +140,7 @@ def get_pdbs(data_loader, repeat=1, max_length=10000, num_units=1000000):
     pdb_dict_list = []
     t0 = time.time()
     for _ in range(repeat):
-        for step,t in enumerate(data_loader):
+        for step,t in enumerate(tqdm(data_loader)):
             t = {k:v[0] for k,v in t.items()}
             c1 += 1
             if 'label' in list(t):

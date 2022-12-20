@@ -1,6 +1,7 @@
 from glob import glob
 import os
 import wandb
+from tqdm import tqdm
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
@@ -11,9 +12,14 @@ import torch.nn.functional as F
 from omegaconf import OmegaConf
 
 from torch.utils.data import DataLoader
+from cache import cache
+from combo_dataset import ComboDataset
+from protein_mpnn_utils import loss_smoothed
+from training.model_utils import featurize
 
 from transfer_model import TransferModel
 from fireprot_dataset import FireProtDataset
+
 
 def get_metrics():
     return {
@@ -30,6 +36,7 @@ class TransferModelPL(pl.LightningModule):
         
         self.ddg_lambda = cfg.loss.ddG_lambda
         self.dtm_lambda = cfg.loss.dTm_lambda
+        self.seq_lambda = cfg.loss.seq_lambda
         self.learn_rate = cfg.learn_rate
 
         self.metrics = nn.ModuleDict()
@@ -45,8 +52,8 @@ class TransferModelPL(pl.LightningModule):
 
     def shared_eval(self, batch, batch_idx, prefix):
         assert len(batch) == 1
-        pdb, mutations = batch[0]
-        pred = self(pdb, mutations)
+        (mut_pdb, mutations), reg_pdb = batch[0]
+        pred, _ = self(mut_pdb, mutations)
         ddg_mses = []
         dtm_mses = []
         for mut, out in zip(mutations, pred):
@@ -61,11 +68,22 @@ class TransferModelPL(pl.LightningModule):
         
         ddg_loss = 0.0 if len(ddg_mses) == 0 else torch.stack(ddg_mses).mean()
         dtm_loss = 0.0 if len(dtm_mses) == 0 else torch.stack(dtm_mses).mean()
-        loss = self.dtm_lambda*dtm_loss + self.ddg_lambda*ddg_loss
+
+        # now from predicting sequence from reg_pdb
+
+        _, log_probs = self(reg_pdb, [], False)
+        device = next(self.parameters()).device
+        X, S, mask, lengths, chain_M, residue_idx, mask_self, chain_encoding_all = featurize([reg_pdb], device)
+        _, loss_av_smoothed = loss_smoothed(S, log_probs, chain_M)
+
+        loss = self.dtm_lambda*dtm_loss + self.ddg_lambda*ddg_loss + self.seq_lambda*loss_av_smoothed
 
         on_step = False
         # on_step = prefix == "train"
         on_epoch = not on_step
+
+        self.log(f"{prefix}_seq_loss", loss_av_smoothed, prog_bar=True, on_step=on_step, on_epoch=on_epoch, batch_size=len(batch))
+
         for output in ("dTm", "ddG"):
             for name, metric in self.metrics[f"{prefix}_metrics"][output].items():
                 try:
@@ -92,10 +110,10 @@ class TransferModelPL(pl.LightningModule):
 def train(cfg):
 
     if cfg.project is not None:
-        wandb.init(project=cfg.project)
+        wandb.init(project=cfg.project, name=cfg.name)
 
-    train_dataset = FireProtDataset(cfg, "train")
-    val_dataset = FireProtDataset(cfg, "val")
+    train_dataset = ComboDataset(cfg, "train")
+    val_dataset = ComboDataset(cfg, "val")
     train_loader = DataLoader(train_dataset, collate_fn=lambda x: x)
     val_loader = DataLoader(val_dataset, collate_fn=lambda x: x)
     model_pl = TransferModelPL(cfg)
@@ -114,6 +132,7 @@ def train(cfg):
         logger = WandbLogger(project=cfg.project, name="test", log_model="all")
     else:
         logger = None
+    print(len(train_loader), len(val_loader))
     trainer = pl.Trainer(callbacks=[checkpoint_callback],
                          logger=logger,
                          log_every_n_steps=10,
@@ -125,3 +144,7 @@ if __name__ == "__main__":
     cfg = OmegaConf.load("config.yaml")
     cfg = OmegaConf.merge(cfg, OmegaConf.from_cli())
     train(cfg)
+    # train_dataset = ComboDataset(cfg, "train")
+    # train_loader = DataLoader(train_dataset, collate_fn=lambda x: x)
+    # for i, d in enumerate(tqdm(train_loader)):
+    #     print(i, len(d[0][1]['seq']))
