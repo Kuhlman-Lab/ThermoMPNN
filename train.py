@@ -142,6 +142,7 @@ def train(cfg):
 
 if __name__ == "__main__":
     cfg = OmegaConf.load("config.yaml")
+    cfg = OmegaConf.merge(cfg, OmegaConf.load("local.yaml"))
     cfg = OmegaConf.merge(cfg, OmegaConf.from_cli())
     train(cfg)
     # train_dataset = ComboDataset(cfg, "train")

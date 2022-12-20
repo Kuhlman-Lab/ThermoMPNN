@@ -135,3 +135,5 @@ wandb
 
 # pymol smh
 *.cif
+
+local.yaml

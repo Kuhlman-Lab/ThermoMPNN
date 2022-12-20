@@ -18,7 +18,3 @@ model:
 data:
   max_protein_length: 500
   num_pdb_datapoints: 1000
-
-platform:
-  cache_dir: "/home/boris/Data/enzyme_stability_cache"
-  pdb_dir: "/home/boris/Data/pdb_2021aug02"
