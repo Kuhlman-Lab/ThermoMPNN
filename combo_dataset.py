@@ -2,6 +2,7 @@ import random
 import torch
 from cache import cache
 from fireprot_dataset import FireProtDataset
+from mega_scale_dataset import MegaScaleDataset
 from training.utils import worker_init_fn, get_pdbs, loader_pdb, build_training_clusters, PDB_dataset, StructureDataset, StructureLoader
 
 @cache(lambda cfg, p: "")
@@ -22,7 +23,8 @@ class ComboDataset(torch.utils.data.Dataset):
 
     def __init__(self, cfg, split):
 
-        self.fireprot = FireProtDataset(cfg, split)
+        # self.fireprot = FireProtDataset(cfg, split)
+        self.mega_scale = MegaScaleDataset(cfg, split)
 
         data_path = cfg.platform.pdb_dir
         params = {
@@ -57,4 +59,5 @@ class ComboDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         # get the ith fireprot item and randomly sample from the pdb dataset
-        return self.fireprot[index], random.choice(self.pdb_dataset)
+        # return self.fireprot[index], random.choice(self.pdb_dataset)
+        return self.mega_scale[index], random.choice(self.pdb_dataset)
