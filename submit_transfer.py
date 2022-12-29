@@ -35,7 +35,7 @@ def submit(cfg):
         mutations.append(mutation)
 
     with torch.no_grad():
-        preds = [ out['dTm'].cpu().item() if out is not None else -100 for out in model(pdb, mutations) ]
+        preds = [ out['ddG'].cpu().item() if out is not None else -100 for out in model(pdb, mutations)[0] ]
 
     df['dTm'] = preds
     new_df = pd.DataFrame({'seq_id': df.seq_id, 'tm': df.dTm })
@@ -43,4 +43,5 @@ def submit(cfg):
 
 if __name__ == "__main__":
     cfg = OmegaConf.load("config.yaml")
+    cfg = OmegaConf.merge(cfg, OmegaConf.load("local.yaml"))
     submit(cfg)

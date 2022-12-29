@@ -71,6 +71,7 @@ class MegaScaleDataset(torch.utils.data.Dataset):
 
             msa_hist = torch.zeros((len(alphabet,)))
             ddG = row.deltaG - wt_dG
+            ddG = torch.tensor([ddG], dtype=torch.float32)
 
             mutations.append(Mutation(idx, wt, mut, msa_hist, ddG, None))
 

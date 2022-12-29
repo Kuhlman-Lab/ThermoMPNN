@@ -1,4 +1,5 @@
 project: enzyme-stability
+name: test_run
 
 loss:
   ddG_lambda: 0.5
@@ -9,7 +10,7 @@ learn_rate: 0.01
 
 model:
   type: transfer
-  hidden_dims: [50, 20]
+  hidden_dims: [128, 64, 32, 16]
   subtract_mut: true
   num_final_layers: 2
   use_msa: false

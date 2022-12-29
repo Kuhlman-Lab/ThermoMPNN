@@ -42,7 +42,7 @@ class TransferModelPL(pl.LightningModule):
         self.metrics = nn.ModuleDict()
         for split in ("train_metrics", "val_metrics"):
             self.metrics[split] = nn.ModuleDict()
-            for out in ("ddG", "dTm"):
+            for out in ("ddG",):# "dTm"):
                 self.metrics[split][out] = nn.ModuleDict()
                 for name, metric in get_metrics().items():
                     self.metrics[split][out][name] = metric
@@ -71,10 +71,14 @@ class TransferModelPL(pl.LightningModule):
 
         # now from predicting sequence from reg_pdb
 
-        _, log_probs = self(reg_pdb, [], False)
-        device = next(self.parameters()).device
-        X, S, mask, lengths, chain_M, residue_idx, mask_self, chain_encoding_all = featurize([reg_pdb], device)
-        _, loss_av_smoothed = loss_smoothed(S, log_probs, chain_M)
+        if self.seq_lambda != 0:
+            print("!", self.seq_lambda)
+            _, log_probs = self(reg_pdb, [], False)
+            device = next(self.parameters()).device
+            X, S, mask, lengths, chain_M, residue_idx, mask_self, chain_encoding_all = featurize([reg_pdb], device)
+            _, loss_av_smoothed = loss_smoothed(S, log_probs, chain_M)
+        else:
+            loss_av_smoothed = 0.0
 
         loss = self.dtm_lambda*dtm_loss + self.ddg_lambda*ddg_loss + self.seq_lambda*loss_av_smoothed
 
@@ -84,7 +88,7 @@ class TransferModelPL(pl.LightningModule):
 
         self.log(f"{prefix}_seq_loss", loss_av_smoothed, prog_bar=True, on_step=on_step, on_epoch=on_epoch, batch_size=len(batch))
 
-        for output in ("dTm", "ddG"):
+        for output in ("ddG",):#("dTm", "ddG"):
             for name, metric in self.metrics[f"{prefix}_metrics"][output].items():
                 try:
                     metric.compute()
@@ -123,15 +127,16 @@ def train(cfg):
         os.remove(file)
 
     checkpoint_callback = ModelCheckpoint(
-        monitor='val_dTm_spearman',
+        monitor='val_ddG_spearman',
         mode='max',
         dirpath='checkpoints',
-        filename='fireprot_{epoch:02d}_{val_dTm_spearman:.02}'
+        filename='fireprot_{epoch:02d}_{val_ddG_spearman:.02}'
     )
     if cfg.project is not None:
         logger = WandbLogger(project=cfg.project, name="test", log_model="all")
     else:
         logger = None
+
     print(len(train_loader), len(val_loader))
     trainer = pl.Trainer(callbacks=[checkpoint_callback],
                          logger=logger,

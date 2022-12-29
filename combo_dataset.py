@@ -25,6 +25,9 @@ class ComboDataset(torch.utils.data.Dataset):
 
         # self.fireprot = FireProtDataset(cfg, split)
         self.mega_scale = MegaScaleDataset(cfg, split)
+        if cfg.loss.seq_lambda == 0: 
+            self.pdb_dataset = [ None ]
+            return
 
         data_path = cfg.platform.pdb_dir
         params = {
@@ -55,7 +58,7 @@ class ComboDataset(torch.utils.data.Dataset):
         self.pdb_dataset = StructureDataset(split_pdbs, truncate=None, max_length=max_protein_length)
 
     def __len__(self):
-        return len(self.fireprot)
+        return len(self.mega_scale)
 
     def __getitem__(self, index):
         # get the ith fireprot item and randomly sample from the pdb dataset
