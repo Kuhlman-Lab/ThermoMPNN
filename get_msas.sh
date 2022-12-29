@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J msa
-#SBATCH -t 1:00:00
+#SBATCH -t 5:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
 #SBATCH --output=msa.out
@@ -20,4 +20,4 @@ unset __conda_setup
 
 cd /nas/longleaf/home/mixarcid/enzyme-stability
 
-python get_msas.py
+python get_msa.py

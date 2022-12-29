@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/get_msa.py", line 31, in <module>
+    get_msa(row.sequence, row.uniprot_id)
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/get_msa.py", line 13, in get_msa
+    raw_inputs = getRawInputs(
+  File "/proj/kuhl_lab/alphafold/run/features.py", line 123, in getRawInputs
+    a3m_lines, template_paths = runMMseqs2(
+  File "/proj/kuhl_lab/alphafold/run/features.py", line 281, in runMMseqs2
+    raise Exception('MMseqs2 API is giving errors. Please confirm '
+Exception: MMseqs2 API is giving errors. Please confirm your input is a valid protein sequence. If error persists, please try again in an hour.
