@@ -3,7 +3,7 @@ project: enzyme-stability
 loss:
   ddG_lambda: 0.5
   dTm_lambda: 0.5
-  seq_lambda: 0.5
+  seq_lambda: 0.0
 
 learn_rate: 0.01
 
@@ -12,8 +12,8 @@ model:
   hidden_dims: [50, 20]
   subtract_mut: true
   num_final_layers: 2
-  use_msa: true
-  freeze_weights: false
+  use_msa: false
+  freeze_weights: true
 
 data:
   max_protein_length: 500
