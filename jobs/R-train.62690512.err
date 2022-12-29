@@ -1,0 +1,33 @@
+wandb: Currently logged in as: mixarcid. Use `wandb login --relogin` to force relogin
+2022-12-20 12:55:52.843903: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-12-20 12:55:54.390605: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /nas/longleaf/apps/cuda/11.3/lib64:/nas/longleaf/apps/cuda/11.3/extras/CUPTI/lib64
+2022-12-20 12:55:54.390688: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /nas/longleaf/apps/cuda/11.3/lib64:/nas/longleaf/apps/cuda/11.3/extras/CUPTI/lib64
+2022-12-20 12:55:54.390698: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+wandb: wandb version 0.13.7 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.16
+wandb: Run data is saved locally in /nas/longleaf/home/mixarcid/enzyme-stability/wandb/run-20221220_125551-6kcdpxmp
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run test
+wandb: ⭐️ View project at https://wandb.ai/mixarcid/enzyme-stability
+wandb: 🚀 View run at https://wandb.ai/mixarcid/enzyme-stability/runs/6kcdpxmp
+Traceback (most recent call last):
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/train.py", line 146, in <module>
+    train(cfg)
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/train.py", line 115, in train
+    train_dataset = ComboDataset(cfg, "train")
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/combo_dataset.py", line 38, in __init__
+    train, valid, test = train_clusters_cached(cfg, params)
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/cache.py", line 31, in cached_f
+    ret = f(cfg, *args, **kwargs)
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/combo_dataset.py", line 9, in train_clusters_cached
+    return build_training_clusters(params, False)
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/training/utils.py", line 317, in build_training_clusters
+    val_ids = set([int(l) for l in open(params['VAL']).readlines()])
+FileNotFoundError: [Errno 2] No such file or directory: '/home/boris/Data/pdb_2021aug02/valid_clusters.txt'
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.000 MB of 0.000 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: - 0.011 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: \ 0.011 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: | 0.011 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: / 0.011 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: - 0.011 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: \ 0.011 MB of 0.011 MB uploaded (0.000 MB deduped)wandb: | 0.011 MB of 0.011 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: Synced test: https://wandb.ai/mixarcid/enzyme-stability/runs/6kcdpxmp
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20221220_125551-6kcdpxmp/logs
