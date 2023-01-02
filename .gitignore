@@ -136,4 +136,5 @@ wandb
 # pymol smh
 *.cif
 
+jobs
 local.yaml

@@ -1,41 +1,0 @@
-wandb: Currently logged in as: mixarcid. Use `wandb login --relogin` to force relogin
-2022-12-20 12:54:31.295574: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
-To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-12-20 12:54:35.955735: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /nas/longleaf/apps/cuda/11.3/lib64:/nas/longleaf/apps/cuda/11.3/extras/CUPTI/lib64
-2022-12-20 12:54:35.956847: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /nas/longleaf/apps/cuda/11.3/lib64:/nas/longleaf/apps/cuda/11.3/extras/CUPTI/lib64
-2022-12-20 12:54:35.956873: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
-wandb: wandb version 0.13.7 is available!  To upgrade, please run:
-wandb:  $ pip install wandb --upgrade
-wandb: Tracking run with wandb version 0.12.16
-wandb: Run data is saved locally in /nas/longleaf/home/mixarcid/enzyme-stability/wandb/run-20221220_125429-2w5t9xt1
-wandb: Run `wandb offline` to turn off syncing.
-wandb: Syncing run test
-wandb: ⭐️ View project at https://wandb.ai/mixarcid/enzyme-stability
-wandb: 🚀 View run at https://wandb.ai/mixarcid/enzyme-stability/runs/2w5t9xt1
-Traceback (most recent call last):
-  File "/nas/longleaf/home/mixarcid/enzyme-stability/train.py", line 146, in <module>
-    train(cfg)
-  File "/nas/longleaf/home/mixarcid/enzyme-stability/train.py", line 115, in train
-    train_dataset = ComboDataset(cfg, "train")
-  File "/nas/longleaf/home/mixarcid/enzyme-stability/combo_dataset.py", line 25, in __init__
-    self.fireprot = FireProtDataset(cfg, split)
-  File "/nas/longleaf/home/mixarcid/enzyme-stability/fireprot_dataset.py", line 91, in __init__
-    df = pd.read_csv(filename)
-  File "/nas/longleaf/home/mixarcid/miniconda3/lib/python3.9/site-packages/pandas/util/_decorators.py", line 311, in wrapper
-    return func(*args, **kwargs)
-  File "/nas/longleaf/home/mixarcid/miniconda3/lib/python3.9/site-packages/pandas/io/parsers/readers.py", line 680, in read_csv
-    return _read(filepath_or_buffer, kwds)
-  File "/nas/longleaf/home/mixarcid/miniconda3/lib/python3.9/site-packages/pandas/io/parsers/readers.py", line 575, in _read
-    parser = TextFileReader(filepath_or_buffer, **kwds)
-  File "/nas/longleaf/home/mixarcid/miniconda3/lib/python3.9/site-packages/pandas/io/parsers/readers.py", line 933, in __init__
-    self._engine = self._make_engine(f, self.engine)
-  File "/nas/longleaf/home/mixarcid/miniconda3/lib/python3.9/site-packages/pandas/io/parsers/readers.py", line 1217, in _make_engine
-    self.handles = get_handle(  # type: ignore[call-overload]
-  File "/nas/longleaf/home/mixarcid/miniconda3/lib/python3.9/site-packages/pandas/io/common.py", line 789, in get_handle
-    handle = open(
-FileNotFoundError: [Errno 2] No such file or directory: 'data/v2_monomers_allmutations_oldAlignment_wmetadata_bestpH.csv'
-wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
-wandb: - 0.000 MB of 0.000 MB uploaded (0.000 MB deduped)wandb: \ 0.000 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: - 0.001 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: \ 0.012 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: | 0.012 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: / 0.012 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: - 0.012 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: \ 0.012 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: | 0.012 MB of 0.012 MB uploaded (0.000 MB deduped)wandb: / 0.012 MB of 0.012 MB uploaded (0.000 MB deduped)wandb:                                                                                
-wandb: Synced test: https://wandb.ai/mixarcid/enzyme-stability/runs/2w5t9xt1
-wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
-wandb: Find logs at: ./wandb/run-20221220_125429-2w5t9xt1/logs
