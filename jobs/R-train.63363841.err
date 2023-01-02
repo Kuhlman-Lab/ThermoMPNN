@@ -1,0 +1,36 @@
+/nas/longleaf/home/mixarcid/miniconda3/envs/chem-py3.9/lib/python3.9/site-packages/Bio/pairwise2.py:278: BiopythonDeprecationWarning: Bio.pairwise2 has been deprecated, and we intend to remove it in a future release of Biopython. As an alternative, please consider using Bio.Align.PairwiseAligner as a replacement, and contact the Biopython developers if you still need the Bio.pairwise2 module.
+  warnings.warn(
+wandb: Currently logged in as: mixarcid. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.13.7
+wandb: Run data is saved locally in /nas/longleaf/home/mixarcid/enzyme-stability/wandb/run-20230102_115600-3orl8rh0
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run test_run
+wandb: ⭐️ View project at https://wandb.ai/mixarcid/enzyme-stability
+wandb: 🚀 View run at https://wandb.ai/mixarcid/enzyme-stability/runs/3orl8rh0
+/nas/longleaf/home/mixarcid/enzyme-stability/mega_scale_dataset.py:14: DtypeWarning: Columns (30,36) have mixed types. Specify dtype option on import or set low_memory=False.
+  df = pd.read_csv(fname)
+/nas/longleaf/home/mixarcid/enzyme-stability/mega_scale_dataset.py:14: DtypeWarning: Columns (30,36) have mixed types. Specify dtype option on import or set low_memory=False.
+  df = pd.read_csv(fname)
+/nas/longleaf/home/mixarcid/miniconda3/envs/chem-py3.9/lib/python3.9/site-packages/torchmetrics/utilities/prints.py:36: UserWarning: Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer. For large datasets, this may lead to large memory footprint.
+  warnings.warn(*args, **kwargs)
+GPU available: True, used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+/nas/longleaf/home/mixarcid/miniconda3/envs/chem-py3.9/lib/python3.9/site-packages/pytorch_lightning/trainer/trainer.py:1584: UserWarning: GPU available but not used. Set the gpus flag in your trainer `Trainer(gpus=1)` or script `--gpus=1`.
+  rank_zero_warn(
+Set SLURM handle signals.
+
+  | Name    | Type          | Params
+------------------------------------------
+0 | model   | TransferModel | 1.7 M 
+1 | metrics | ModuleDict    | 0     
+------------------------------------------
+34.2 K    Trainable params
+1.7 M     Non-trainable params
+1.7 M     Total params
+6.779     Total estimated model params size (MB)
+/nas/longleaf/home/mixarcid/miniconda3/envs/chem-py3.9/lib/python3.9/site-packages/pytorch_lightning/trainer/data_loading.py:132: UserWarning: The dataloader, val_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+/nas/longleaf/home/mixarcid/miniconda3/envs/chem-py3.9/lib/python3.9/site-packages/pytorch_lightning/trainer/data_loading.py:132: UserWarning: The dataloader, train_dataloader, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+slurmstepd: error: *** JOB 63363841 ON g0604 CANCELLED AT 2023-01-02T11:57:13 ***

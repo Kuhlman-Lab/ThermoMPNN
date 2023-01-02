@@ -1,10 +1,14 @@
+/nas/longleaf/home/mixarcid/enzyme-stability/get_msa.py:38: DtypeWarning: Columns (30,36) have mixed types. Specify dtype option on import or set low_memory=False.
+  df = pd.read_csv(fname)
 Traceback (most recent call last):
-  File "/nas/longleaf/home/mixarcid/enzyme-stability/get_msa.py", line 31, in <module>
-    get_msa(row.sequence, row.uniprot_id)
+  File "/nas/longleaf/home/mixarcid/enzyme-stability/get_msa.py", line 43, in <module>
+    get_msa(row.aa_seq_full, row.WT_name)
   File "/nas/longleaf/home/mixarcid/enzyme-stability/get_msa.py", line 13, in get_msa
     raw_inputs = getRawInputs(
   File "/proj/kuhl_lab/alphafold/run/features.py", line 123, in getRawInputs
     a3m_lines, template_paths = runMMseqs2(
-  File "/proj/kuhl_lab/alphafold/run/features.py", line 281, in runMMseqs2
-    raise Exception('MMseqs2 API is giving errors. Please confirm '
-Exception: MMseqs2 API is giving errors. Please confirm your input is a valid protein sequence. If error persists, please try again in an hour.
+  File "/proj/kuhl_lab/alphafold/run/features.py", line 285, in runMMseqs2
+    download(ID, tar_gz_file)
+  File "/proj/kuhl_lab/alphafold/run/features.py", line 229, in download
+    out.write(res.content)
+OSError: [Errno 122] Disk quota exceeded

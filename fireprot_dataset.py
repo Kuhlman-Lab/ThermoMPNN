@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from collections import defaultdict
 import os
+from math import isnan
 import pickle
 from typing import Optional, Sequence
 import torch
@@ -181,8 +182,8 @@ class FireProtDataset(torch.utils.data.Dataset):
 
             assert pdb[0]['seq'][pdb_idx] == row.wild_type == row.sequence_corrected[row.position_corrected]
 
-            ddG = None if row.ddG is None else torch.tensor([row.ddG], dtype=torch.float32)
-            dTm = None if row.dTm is None else torch.tensor([row.dTm], dtype=torch.float32)
+            ddG = None if row.ddG is None or isnan(row.ddG) else torch.tensor([row.ddG], dtype=torch.float32)
+            dTm = None if row.dTm is None or isnan(row.dTm) else torch.tensor([row.dTm], dtype=torch.float32)
             mut = Mutation(pdb_idx, pdb[0]['seq'][pdb_idx], row.mutation, msa_hist, ddG, dTm)
             mutations.append(mut)
 
