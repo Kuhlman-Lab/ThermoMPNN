@@ -9,6 +9,7 @@
 #SBATCH --error=jobs/R-%x.%j.err
 #SBATCH --gres=gpu:1
 #SBATCH --qos=gpu_access
+#SBATCH --exclude=g0601
 
 __conda_setup="$('/nas/longleaf/home/mixarcid/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then

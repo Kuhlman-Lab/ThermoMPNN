@@ -1,5 +1,6 @@
 import random
 import torch
+from torch.utils.data import ConcatDataset
 from cache import cache
 from fireprot_dataset import FireProtDataset
 from mega_scale_dataset import MegaScaleDataset
@@ -23,8 +24,9 @@ class ComboDataset(torch.utils.data.Dataset):
 
     def __init__(self, cfg, split):
 
-        # self.fireprot = FireProtDataset(cfg, split)
-        self.mega_scale = MegaScaleDataset(cfg, split)
+        fireprot = FireProtDataset(cfg, split)
+        mega_scale = MegaScaleDataset(cfg, split)
+        self.mut_dataset = ConcatDataset([mega_scale, fireprot])
         if cfg.loss.seq_lambda == 0: 
             self.pdb_dataset = [ None ]
             return
