@@ -6,8 +6,9 @@ from train import TransferModelPL
 from fireprot_dataset import Mutation, get_msa_hist
 from protein_mpnn_utils import loss_nll, loss_smoothed, gather_edges, gather_nodes, gather_nodes_t, cat_neighbors_nodes, _scores, _S_to_seq, tied_featurize, parse_PDB
 
+alphabet = 'ACDEFGHIKLMNPQRSTVWY-'
 def submit(cfg):
-    model = TransferModelPL.load_from_checkpoint(glob("checkpoints/*.ckpt")[-1], cfg=cfg).model
+    # model = TransferModelPL.load_from_checkpoint(glob("checkpoints/*.ckpt")[-1], cfg=cfg).model
 
     pdb = parse_PDB("data/wildtype_structure_prediction_af2.pdb")
     wt_seq = pdb[0]['seq']
@@ -34,8 +35,18 @@ def submit(cfg):
         mutation = Mutation(position=idx, wildtype=wt_aa, mutation=mut_aa, msa_hist=msa_hist)
         mutations.append(mutation)
 
-    with torch.no_grad():
-        preds = [ out['ddG'].cpu().item() if out is not None else -100 for out in model(pdb, mutations)[0] ]
+    preds = []
+    for mut in mutations:
+        if mut is None:
+            preds.append(0.0)
+            continue
+        mut_aa_idx = alphabet.index(mut.mutation)
+        prob = float(mut.msa_hist[mut_aa_idx])
+        print(prob)
+        preds.append(prob)
+
+    # with torch.no_grad():
+    #     preds = [ out['ddG'].cpu().item() if out is not None else -100 for out in model(pdb, mutations)[0] ]
 
     df['dTm'] = preds
     new_df = pd.DataFrame({'seq_id': df.seq_id, 'tm': df.dTm })

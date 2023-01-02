@@ -51,9 +51,8 @@ def seq1_index_to_seq2_index(align, index):
     return seq2_idx
 
 alphabet = 'ACDEFGHIKLMNPQRSTVWY-'
-@cache(lambda cfg, msa_file: msa_file, disable=False)
+@cache(lambda cfg, msa_file: msa_file, disable=False, version=3.0)
 def get_msa_hist(cfg, msa_file):
-    # print(msa_file)
     first_seq = None
     counts = None
     with open(msa_file, "r") as f:
@@ -62,10 +61,14 @@ def get_msa_hist(cfg, msa_file):
             if counts is None:
                 first_seq = line.strip()
                 counts = [ defaultdict(int) for c in line ]
-            for i, c in enumerate(line.upper()):
+            i = 0
+            for c in line.upper():
+                if c.islower():
+                    continue
                 if i > len(counts) - 1:
                     break
                 counts[i][c] += 1
+                i += 1
     ret = torch.zeros((len(counts), len(alphabet)), dtype=torch.float32)
     for i, count_dict in enumerate(counts):
         for j, c in enumerate(alphabet):
