@@ -42,7 +42,7 @@ class TransferModelPL(pl.LightningModule):
         self.metrics = nn.ModuleDict()
         for split in ("train_metrics", "val_metrics"):
             self.metrics[split] = nn.ModuleDict()
-            for out in ("ddG",):# "dTm"):
+            for out in ("ddG", "dTm"):
                 self.metrics[split][out] = nn.ModuleDict()
                 for name, metric in get_metrics().items():
                     self.metrics[split][out][name] = metric
@@ -88,7 +88,7 @@ class TransferModelPL(pl.LightningModule):
 
         self.log(f"{prefix}_seq_loss", loss_av_smoothed, prog_bar=True, on_step=on_step, on_epoch=on_epoch, batch_size=len(batch))
 
-        for output in ("ddG",):#("dTm", "ddG"):
+        for output in ("dTm", "ddG"):
             for name, metric in self.metrics[f"{prefix}_metrics"][output].items():
                 try:
                     metric.compute()
@@ -118,7 +118,7 @@ def train(cfg):
 
     train_dataset = ComboDataset(cfg, "train")
     val_dataset = ComboDataset(cfg, "val")
-    train_loader = DataLoader(train_dataset, collate_fn=lambda x: x)
+    train_loader = DataLoader(train_dataset, collate_fn=lambda x: x, shuffle=True)
     val_loader = DataLoader(val_dataset, collate_fn=lambda x: x)
     model_pl = TransferModelPL(cfg)
 
