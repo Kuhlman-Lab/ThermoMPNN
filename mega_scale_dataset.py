@@ -1,6 +1,7 @@
 import torch
 import pandas as pd
-from fireprot_dataset import Mutation, parse_pdb_cached, alphabet
+from Bio import pairwise2
+from fireprot_dataset import Mutation, parse_pdb_cached, alphabet, get_msa_hist, seq1_index_to_seq2_index
 
 class MegaScaleDataset(torch.utils.data.Dataset):
 
@@ -57,6 +58,17 @@ class MegaScaleDataset(torch.utils.data.Dataset):
         pdb = parse_pdb_cached(self.cfg, pdb_file)
         assert pdb[0]["seq"] == wt_seq
 
+        msa_align = None
+        msa_seq = None
+        try:
+            all_msa_hist, msa_seq = get_msa_hist(self.cfg, f"data/msas/{wt_name}.a3m")
+            msa_align, *rest = pairwise2.align.globalxx(wt_seq, msa_seq)
+        except FileNotFoundError:
+            pass
+            # print(f"No msa for {wt_name} ({len(mut_data)}), skipping")
+
+        
+
         mutations = []
         for i, row in mut_data.iterrows():
             # no insertions, deletions, or double mutants
@@ -72,6 +84,15 @@ class MegaScaleDataset(torch.utils.data.Dataset):
             msa_hist = torch.zeros((len(alphabet,)))
             ddG = row.deltaG - wt_dG
             ddG = torch.tensor([ddG], dtype=torch.float32)
+
+            msa_idx = None
+            if msa_align is not None:
+                msa_idx = seq1_index_to_seq2_index(msa_align, idx)
+
+            msa_hist = torch.zeros((len(alphabet,)))
+            if msa_idx is not None:
+                assert msa_seq[msa_idx] == wt
+                msa_hist = all_msa_hist[msa_idx]
 
             mutations.append(Mutation(idx, wt, mut, msa_hist, ddG, None))
 

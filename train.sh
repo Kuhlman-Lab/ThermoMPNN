@@ -22,7 +22,9 @@ else
 fi
 unset __conda_setup
 
-module load cuda/11.3
+module load gcc/11.2.0
+module load cuda/11.8
+conda activate chem-py3.9
 
 cd /nas/longleaf/home/mixarcid/enzyme-stability
 
