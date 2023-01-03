@@ -10,7 +10,7 @@ learn_rate: 0.01
 
 model:
   type: transfer
-  hidden_dims: [16, 16, 8, 8]
+  hidden_dims: [64, 32]
   subtract_mut: true
   num_final_layers: 2
   use_msa: false

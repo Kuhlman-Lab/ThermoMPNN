@@ -26,7 +26,7 @@ class ComboDataset(torch.utils.data.Dataset):
 
         fireprot = FireProtDataset(cfg, split)
         mega_scale = MegaScaleDataset(cfg, split)
-        self.mut_dataset = ConcatDataset([mega_scale, fireprot])
+        self.mut_dataset = mega_scale # ConcatDataset([mega_scale, fireprot])
         if cfg.loss.seq_lambda == 0: 
             self.pdb_dataset = [ None ]
             return
