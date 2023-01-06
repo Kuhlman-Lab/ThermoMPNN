@@ -63,7 +63,7 @@ class TransferModel(nn.Module):
         else:
             X, S, mask, lengths, chain_M, residue_idx, mask_self, chain_encoding_all = featurize([pdb], device)
         # all_mpnn_hid, mpnn_embed = self.prot_mpnn(X, S, mask, chain_M*chain_M_pos, residue_idx, chain_encoding_all, None)
-        all_mpnn_hid, mpnn_embed = self.prot_mpnn(X, S, mask, chain_M, residue_idx, chain_encoding_all, None)
+        all_mpnn_hid, mpnn_embed, _ = self.prot_mpnn(X, S, mask, chain_M, residue_idx, chain_encoding_all, None)
         mpnn_hid = torch.cat(all_mpnn_hid[:self.num_final_layers], -1)
         seq = self.seq_out(mpnn_hid)
 

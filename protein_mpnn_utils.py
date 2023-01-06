@@ -1079,11 +1079,10 @@ class ProteinMPNN(nn.Module):
             all_hidden.append(h_V)
 
         # yeet early and return hidden layer
-        return list(reversed(all_hidden)), h_S
 
         logits = self.W_out(h_V)
         log_probs = F.log_softmax(logits, dim=-1)
-        return log_probs
+        return list(reversed(all_hidden)), h_S, log_probs
 
 
 

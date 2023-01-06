@@ -82,8 +82,11 @@ class MegaScaleDataset(torch.utils.data.Dataset):
             assert row.aa_seq[idx] == mut
 
             msa_hist = torch.zeros((len(alphabet,)))
-            ddG = row.deltaG - wt_dG
-            ddG = torch.tensor([ddG], dtype=torch.float32)
+            if row.ddG_ML == '-':
+                continue # unreliable data
+
+            ddG = float(row.ddG_ML) # row.deltaG - wt_dG
+            ddG = -torch.tensor([ddG], dtype=torch.float32)
 
             msa_idx = None
             if msa_align is not None:

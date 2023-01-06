@@ -29,4 +29,9 @@ conda activate chem-py3.9
 
 cd /nas/longleaf/home/mixarcid/enzyme-stability
 
-python train.py $@
+# python train.py $@
+
+python train.py loss.ddG_lambda=0.1 loss.dTm_lambda=0.9 name=combo_0.1_0.9
+python train.py loss.ddG_lambda=0.5 loss.dTm_lambda=0.5 name=combo_0.0.5_0.5
+python train.py loss.ddG_lambda=0.9 loss.dTm_lambda=0.1 name=combo_0.9_0.1
+python train.py datasets=[rocklin] name=rocklin_ml

@@ -114,7 +114,8 @@ class FireProtDataset(torch.utils.data.Dataset):
         splits = {
             "val": [],
             "test": [],
-            "train": []
+            "train": [],
+            "all": [],
         }
         split_iter = iter(split_fracs.keys())
         cur_split = next(split_iter)
@@ -124,6 +125,7 @@ class FireProtDataset(torch.utils.data.Dataset):
             data = self.seq_to_data[seq]
             cur_data_len += len(data)
             splits[cur_split].append(seq)
+            splits["all"].append(seq)
             if cur_data_len >= split_fracs[cur_split]*tot_data:
                 cur_split = next(split_iter)
                 cur_data_len = 0

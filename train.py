@@ -96,6 +96,8 @@ class TransferModelPL(pl.LightningModule):
                     # can't log metrics that haven't been updated
                     continue
                 self.log(f"{prefix}_{output}_{name}", metric, prog_bar=True, on_step=on_step, on_epoch=on_epoch, batch_size=len(batch))
+        if loss == 0.0:
+            return None
         return loss
 
     def training_step(self, batch, batch_idx):

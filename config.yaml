@@ -1,6 +1,8 @@
 project: enzyme-stability
 name: test_run
 
+datasets: [rocklin, fireprot]
+
 loss:
   ddG_lambda: 0.5
   dTm_lambda: 0.5
