@@ -123,10 +123,17 @@ class FireProtDataset(torch.utils.data.Dataset):
         cur_data_len = 0
         for seq in sorted_seqs:
             data = self.seq_to_data[seq]
+            pdb_id = data.pdb_id_corrected[0]
             cur_data_len += len(data)
-            splits[cur_split].append(seq)
+
+            if cur_split in ("val", "test") and pdb_id in ("1UZC", "1UBQ", "1MJC", "1PGA", "1YU5"):
+                print("Skipping", cur_split, pdb_id)
+            else:
+                splits[cur_split].append(seq)
+
             splits["all"].append(seq)
             if cur_data_len >= split_fracs[cur_split]*tot_data:
+
                 cur_split = next(split_iter)
                 cur_data_len = 0
 

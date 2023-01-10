@@ -24,6 +24,24 @@ from training.model_utils import featurize
 from transfer_model import TransferModel, get_protein_mpnn
 from fireprot_dataset import FireProtDataset
 
+def get_weight_artifact(run, tag="latest"):
+    api = wandb.Api()
+    return api.artifact(f"{run.project}/model-{run.id}:latest", type='model')
+
+def get_old_model(cfg, run, tag="latest"):
+    artifact = get_weight_artifact(run, tag)
+    artifact_dir = f"artifacts/model-{run.id}:{artifact.version}"
+    if not os.path.exists(artifact_dir):
+        assert os.path.normpath(artifact_dir) == os.path.normpath(artifact.download())
+    checkpoint_file = artifact_dir + "/model.ckpt"
+    return TransferModelPL.load_from_checkpoint(checkpoint_file, cfg=cfg).model
+
+def get_old_model_by_name(cfg, name):
+    api = wandb.Api()
+    runs = api.runs(path=cfg.project, filters={"display_name": name})
+    assert len(runs) == 1
+    return get_old_model(cfg, runs[0])
+
 alphabet = 'ACDEFGHIKLMNPQRSTVWYX'
 class ProteinMPNNBaseline(nn.Module):
 
@@ -65,12 +83,16 @@ def get_metrics():
 
 def main(cfg):
     models = {
-        # "FireProt": TransferModelPL.load_from_checkpoint("data/fireprot.ckpt", cfg=cfg).model,
+        "Rocklin (ML)": get_old_model_by_name(cfg, "rocklin_ml"),
+        "Combo 0.9 - 0.1": get_old_model_by_name(cfg, "combo_0.9_0.1"),
+        "Combo 0.5 - 0.5": get_old_model_by_name(cfg, "combo_0.5_0.5"),
+        "Combo 0.1 - 0.9": get_old_model_by_name(cfg, "combo_0.1_0.9"),
+        "FireProt": TransferModelPL.load_from_checkpoint("data/fireprot.ckpt", cfg=cfg).model,
         "Rocklin": TransferModelPL.load_from_checkpoint("data/rocklin.ckpt", cfg=cfg).model,
-        # 'ProteinMPNN': ProteinMPNNBaseline()
+        'ProteinMPNN': ProteinMPNNBaseline()
     }
     datasets = {
-        # "Rocklin (val)": MegaScaleDataset(cfg, "val"),
+        "Rocklin (val)": MegaScaleDataset(cfg, "val"),
         "FireProt (val)": FireProtDataset(cfg, "val"),
         # "Rocklin (train)": MegaScaleDataset(cfg, "train"),
         # "FireProt (train)": FireProtDataset(cfg, "train")
@@ -110,6 +132,19 @@ def main(cfg):
     df = pd.DataFrame(results)
     print(df)
     df.to_csv("data/dataset_metrics.csv")
+    # df.to_clipboard()
+
+    rows = []
+    for model in ["FireProt", "Rocklin", "Rocklin (ML)", "ProteinMPNN", "Combo 0.9 - 0.1", "Combo 0.5 - 0.5", "Combo 0.1 - 0.9"]:
+        cur = { "model": model }
+        for metric in [ "ddG spearman", "dTm spearman" ]:
+            for dataset in [ "Rocklin (val)", "FireProt (val)" ]:
+                cur_rows = df.query("Model == @model and Dataset == @dataset").reset_index(drop=True)
+                assert len(cur_rows) == 1
+                cur[dataset + " " + metric] = cur_rows[metric][0]
+        rows.append(cur)        
+    out_df = pd.DataFrame(rows)
+    out_df.to_csv("data/dataset_metrics_out.csv")
 
 if __name__ == "__main__":
     cfg = OmegaConf.load("config.yaml")

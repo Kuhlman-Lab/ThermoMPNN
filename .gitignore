@@ -132,6 +132,7 @@ data
 lightning_logs
 checkpoints
 wandb
+artifacts
 
 # pymol smh
 *.cif

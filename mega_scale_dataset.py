@@ -27,11 +27,17 @@ class MegaScaleDataset(torch.utils.data.Dataset):
         self.split_wt_names = {
             "val": [],
             "test": [],
-            "train": []
+            "train": [],
+            "all": wt_names,
         }
 
         for key, (start, stop) in split_fracs.items():
             self.split_wt_names[key] = wt_names[int(start*len(wt_names)):int(stop*len(wt_names))]
+            if key in ("val", "test"):
+                for pdb_id in ("1UZC", "1UBQ", "1MJC", "1PGA", "1YU5"):
+                    if pdb_id+".pdb" in self.split_wt_names[key]:
+                        print("Skipping", key, pdb_id)
+                        self.split_wt_names[key].remove(pdb_id+".pdb")
 
         self.wt_seqs = {}
         self.wt_dGs = {}
