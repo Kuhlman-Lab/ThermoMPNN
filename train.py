@@ -38,6 +38,7 @@ class TransferModelPL(pl.LightningModule):
         self.dtm_lambda = cfg.loss.dTm_lambda
         self.seq_lambda = cfg.loss.seq_lambda
         self.learn_rate = cfg.learn_rate
+        self.mpnn_learn_rate = cfg.mpnn_learn_rate
 
         self.metrics = nn.ModuleDict()
         for split in ("train_metrics", "val_metrics"):
@@ -111,7 +112,14 @@ class TransferModelPL(pl.LightningModule):
         return self.shared_eval(batch, batch_idx, 'test')
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.learn_rate)
+        return torch.optim.AdamW([
+            { "params": self.model.prot_mpnn.parameters(), "lr": self.mpnn_learn_rate },
+            { "params": self.model.both_out.parameters(), },
+            { "params": self.model.ddg_out.parameters() },
+            { "params": self.model.dtm_out.parameters() },
+            { "params": self.model.seq_out.parameters() }  
+        ],
+        lr=self.learn_rate)
 
 def train(cfg):
 
