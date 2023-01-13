@@ -101,6 +101,7 @@ def main(cfg):
     max_batches = None
     results = []
     for name, model in models.items():
+        model = model.eval()
         for dataset_name, dataset in datasets.items():
             metrics = {
                 "ddG": get_metrics(),

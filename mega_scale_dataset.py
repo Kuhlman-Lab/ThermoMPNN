@@ -1,3 +1,4 @@
+from collections import defaultdict
 import torch
 import pandas as pd
 from Bio import pairwise2
@@ -5,19 +6,22 @@ from fireprot_dataset import Mutation, parse_pdb_cached, alphabet, get_msa_hist,
 
 class MegaScaleDataset(torch.utils.data.Dataset):
 
-    def __init__(self, cfg, split):
+    def __init__(self, cfg, split, df = None):
 
         self.cfg = cfg
         self.split = split
 
-        fname = "data/mega_scale/Processed_K50_dG_datasets/K50_dG_Dataset1_Dataset2.csv"
-        df = pd.read_csv(fname)
-        # df["name_corrected"] = df.name.str.split("_").str[0]
+        if df is None:
+            fname = "data/mega_scale/Processed_K50_dG_datasets/K50_dG_Dataset1_Dataset2.csv"
+            df = pd.read_csv(fname)
 
         self.df = df
 
         # for now -- yeet the names without a pdb file
-        wt_names = [ name for name in df.WT_name.unique() if "_" not in name ]
+        clusters = defaultdict(list)
+        for name in df.WT_name.unique():
+            pdb_name = name.split(".pdb")[0].replace("|",":")
+            clusters[pdb_name].append(name)
 
         split_fracs = {
             "val": (0.0, 0.1),
@@ -28,16 +32,35 @@ class MegaScaleDataset(torch.utils.data.Dataset):
             "val": [],
             "test": [],
             "train": [],
-            "all": wt_names,
+            "all": list(df.WT_name.unique()),
         }
 
+        cluster_keys = list(clusters.keys())
+        self.name_to_cluster = {}
+        for cluster, names in clusters.items():
+            for name in names:
+                self.name_to_cluster[name] = cluster
+
+        to_skip = [ "2HBB_con", "2J6K_con" ]
         for key, (start, stop) in split_fracs.items():
-            self.split_wt_names[key] = wt_names[int(start*len(wt_names)):int(stop*len(wt_names))]
-            if key in ("val", "test"):
-                for pdb_id in ("1UZC", "1UBQ", "1MJC", "1PGA", "1YU5"):
-                    if pdb_id+".pdb" in self.split_wt_names[key]:
-                        print("Skipping", key, pdb_id)
-                        self.split_wt_names[key].remove(pdb_id+".pdb")
+            split_clusters = cluster_keys[int(start*len(cluster_keys)):int(stop*len(cluster_keys))]
+            self.split_wt_names[key] = []
+            for cluster_key in split_clusters:
+                should_add = True
+                if cluster_key in to_skip:
+                    print(f"Skipping {cluster_key}")
+                    should_add = False
+                    for wt_name in clusters[cluster_key]:
+                        self.split_wt_names["all"].remove(wt_name)
+                    continue
+                if key in ("val", "test"):
+                    for pdb_id in ("1UZC", "1UBQ", "1MJC", "1PGA", "1YU5"):
+                        if pdb_id in cluster_key:
+                            print("Skipping", key, pdb_id)
+                            should_add = False
+                            break
+                if should_add:
+                    self.split_wt_names[key] += clusters[cluster_key]
 
         self.wt_seqs = {}
         self.wt_dGs = {}
@@ -59,10 +82,12 @@ class MegaScaleDataset(torch.utils.data.Dataset):
         mut_data = self.mut_rows[wt_name]
         wt_seq = self.wt_seqs[wt_name]
         wt_dG = self.wt_dGs[wt_name]
+        cluster = self.name_to_cluster[wt_name]
 
-        pdb_file = f"data/mega_scale/AlphaFold_model_PDBs/{wt_name}"
+        pdb_file = f"data/mega_scale/AlphaFold_model_PDBs/{cluster}.pdb"
         pdb = parse_pdb_cached(self.cfg, pdb_file)
-        assert pdb[0]["seq"] == wt_seq
+        assert len(pdb[0]["seq"]) == len(wt_seq)
+        pdb[0]["seq"] = wt_seq
 
         msa_align = None
         msa_seq = None
