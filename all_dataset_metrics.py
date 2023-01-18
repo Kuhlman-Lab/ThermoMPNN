@@ -83,13 +83,15 @@ def get_metrics():
 
 def main(cfg):
     models = {
-        "Rocklin (ML)": get_old_model_by_name(cfg, "rocklin_ml"),
-        "Combo 0.9 - 0.1": get_old_model_by_name(cfg, "combo_0.9_0.1"),
-        "Combo 0.5 - 0.5": get_old_model_by_name(cfg, "combo_0.5_0.5"),
-        "Combo 0.1 - 0.9": get_old_model_by_name(cfg, "combo_0.1_0.9"),
-        "FireProt": TransferModelPL.load_from_checkpoint("data/fireprot.ckpt", cfg=cfg).model,
-        "Rocklin": TransferModelPL.load_from_checkpoint("data/rocklin.ckpt", cfg=cfg).model,
-        'ProteinMPNN': ProteinMPNNBaseline()
+        "Rocklin Full (More data)": get_old_model_by_name(cfg, "bigger_data"),
+        "Rocklin Full": get_old_model_by_name(cfg, "unfrozen_smoller_lrs"),
+        # "Rocklin (ML)": get_old_model_by_name(cfg, "rocklin_ml"),
+        # "Combo 0.9 - 0.1": get_old_model_by_name(cfg, "combo_0.9_0.1"),
+        # "Combo 0.5 - 0.5": get_old_model_by_name(cfg, "combo_0.5_0.5"),
+        # "Combo 0.1 - 0.9": get_old_model_by_name(cfg, "combo_0.1_0.9"),
+        # "FireProt": TransferModelPL.load_from_checkpoint("data/fireprot.ckpt", cfg=cfg).model,
+        # "Rocklin": TransferModelPL.load_from_checkpoint("data/rocklin.ckpt", cfg=cfg).model,
+        # 'ProteinMPNN': ProteinMPNNBaseline()
     }
     datasets = {
         "Rocklin (val)": MegaScaleDataset(cfg, "val"),

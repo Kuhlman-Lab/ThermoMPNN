@@ -12,7 +12,8 @@ def get_protein_mpnn(cfg):
     checkpoint_path = "vanilla_model_weights/v_48_020.pt"
     checkpoint = torch.load(checkpoint_path, map_location='cpu') 
     model = ProteinMPNN(ca_only=False, num_letters=21, node_features=hidden_dim, edge_features=hidden_dim, hidden_dim=hidden_dim, num_encoder_layers=num_layers, num_decoder_layers=num_layers, augment_eps=0.0, k_neighbors=checkpoint['num_edges'])
-    model.load_state_dict(checkpoint['model_state_dict'])
+    if cfg.model.load_pretrained:
+        model.load_state_dict(checkpoint['model_state_dict'])
     
     if cfg.model.freeze_weights:
         model.eval()

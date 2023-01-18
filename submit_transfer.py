@@ -2,13 +2,15 @@ from glob import glob
 import torch
 from omegaconf import OmegaConf
 import pandas as pd
+from all_dataset_metrics import get_old_model_by_name
 from train import TransferModelPL
 from fireprot_dataset import Mutation, get_msa_hist
 from protein_mpnn_utils import loss_nll, loss_smoothed, gather_edges, gather_nodes, gather_nodes_t, cat_neighbors_nodes, _scores, _S_to_seq, tied_featurize, parse_PDB
 
 alphabet = 'ACDEFGHIKLMNPQRSTVWY-'
 def submit(cfg):
-    model = TransferModelPL.load_from_checkpoint(glob("checkpoints/*.ckpt")[-1], cfg=cfg).model
+    # model = TransferModelPL.load_from_checkpoint(glob("checkpoints/*.ckpt")[-1], cfg=cfg).model
+    model = get_old_model_by_name(cfg, "bigger_data")
 
     pdb = parse_PDB("data/wildtype_structure_prediction_af2.pdb")
     wt_seq = pdb[0]['seq']
