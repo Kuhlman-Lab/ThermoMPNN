@@ -9,8 +9,8 @@ loss:
   seq_lambda: 0.0
 
 learn_rate: 0.01
-# mpnn_learn_rate: 0.001
-mpnn_learn_rate: 0.01
+mpnn_learn_rate: 0.0001
+# mpnn_learn_rate: 0.01
 
 model:
   type: transfer
