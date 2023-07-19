@@ -8,6 +8,7 @@ def stringify_cache_key(key):
     return uuid.uuid3(uuid.NAMESPACE_DNS, str(key)).hex
 
 def cache(cache_key, version=0.0, disable=False):
+    """Cache the result of a function call on disk for speedup"""
     def inner_cache(f):
         f_sig = inspect.signature(f)
         @functools.wraps(f)

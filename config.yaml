@@ -1,26 +1,21 @@
 project: enzyme-stability
-name: test_run
+name: example_training
 
-datasets: [rocklin]
+datasets: [fireprot]
 
-loss:
-  ddG_lambda: 1.0
-  dTm_lambda: 0.0
-  seq_lambda: 0.0
+training:
+  num_workers: 12
+  learn_rate: 0.001
+  epochs: 100
+  lr_schedule: true
+  # mpnn_learn_rate: 0.001
+  # two_stage: true
 
-learn_rate: 0.01
-# mpnn_learn_rate: 0.001
-mpnn_learn_rate: 0.01
 
 model:
-  type: transfer
   hidden_dims: [64, 32]
   subtract_mut: true
   num_final_layers: 2
-  use_msa: false
-  freeze_weights: false
-  load_pretrained: false
-
-data:
-  max_protein_length: 500
-  num_pdb_datapoints: 1000
+  freeze_weights: true
+  load_pretrained: true
+  lightattn: true

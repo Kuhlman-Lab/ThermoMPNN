@@ -133,6 +133,9 @@ lightning_logs
 checkpoints
 wandb
 artifacts
+extra_utils
+.idea/
+preprocessing/.ipynb_checkpoints
 
 # pymol smh
 *.cif

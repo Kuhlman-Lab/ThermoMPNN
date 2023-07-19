@@ -1,0 +1,25 @@
+name: thermoMPNN
+channels:
+  - bioconda
+  - anaconda
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - pytorch
+  - pytorch-cuda=11.7
+  - torchvision
+  - torchaudio
+  - torchmetrics
+  - pytorch-lightning
+  - biopython
+  - wandb
+  - mmseqs2
+  - tqdm
+  - pandas
+  - numpy
+  - omegaconf
+  - python==3.10
+  - joblib
+  - cudatoolkit=11.3
