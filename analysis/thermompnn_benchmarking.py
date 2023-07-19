@@ -75,7 +75,7 @@ def get_metrics():
     }
 
 
-def get_trained_model(model_name, config, checkpt_dir='checkpoints/', override_custom=False):
+def get_trained_model(model_name, config, checkpt_dir='models/', override_custom=False):
     if override_custom:
         return TransferModelPL.load_from_checkpoint(model_name, cfg=config).model
     else:
@@ -212,7 +212,7 @@ def main(cfg, args):
 
     models = {
         'ProteinMPNN': ProteinMPNNBaseline(cfg, version='v_48_020.pt'),
-        "ThermoMPNN": get_trained_model(model_name='example_training_mega_epoch=55_val_ddG_spearman=0.79.ckpt',
+        "ThermoMPNN": get_trained_model(model_name='thermoMPNN_default.pt',
                                         config=cfg)
 
     }
