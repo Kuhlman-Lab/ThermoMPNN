@@ -6,7 +6,7 @@ ThermoMPNN is a graph neural network (GNN) trained using transfer learning to pr
 For details on ThermoMPNN training and methodology, please see the accompanying [paper](). 
 
 ## Colab Implementation
-For a user-friendly version of ThermoMPNN requiring no installation, use this [Colab notebook]().
+For a user-friendly version of ThermoMPNN requiring no installation, use this [Colab notebook](https://colab.research.google.com/drive/1OcT4eYwzxUFNlHNPk9_5uvxGNMVg3CFA#scrollTo=i06A5VI142NT).
 
 ## Installation
 To install ThermoMPNN, first clone this repository
