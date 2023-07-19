@@ -16,7 +16,7 @@ mamba env create -f environment.yaml
 This will create a conda environment called ```thermoMPNN```.
 
 ## Inference
-There are a few different ways to run inference with ThermoMPNN.
+There are a few different ways to run inference with ThermoMPNN all located in the ```analysis``` directory.
 
 ### From a PDB
 The simplest way is to use the ```custom_inference.py``` script to pass a custom PDB to ThermoMPNN for site-saturation mutagenesis.
@@ -38,6 +38,4 @@ For the purpose of replication and future benchmarking, the dataset splits used 
 ThermoMPNN model weights can be found in the ```models/``` directory. The following model weights are provided:
 ```
 - thermoMPNN_default.pt (best ThermoMPNN model trained on Megascale training dataset)
-- thermoMPNN_nocys.pt (ThermoMPNN model trained excluding mutations to cysteine to avoid potential disulfide issues)
-- thermoMPNN_naive.pt (ThermoMPNN model trained starting from naive weights)
 ```
