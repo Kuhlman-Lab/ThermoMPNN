@@ -38,6 +38,4 @@ For the purpose of replication and future benchmarking, the dataset splits used 
 ThermoMPNN model weights can be found in the ```models/``` directory. The following model weights are provided:
 ```
 - thermoMPNN_default.pt (best ThermoMPNN model trained on Megascale training dataset)
-- thermoMPNN_nocys.pt (ThermoMPNN model trained excluding mutations to cysteine to avoid potential disulfide issues)
-- thermoMPNN_naive.pt (ThermoMPNN model trained starting from naive weights)
 ```
