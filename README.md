@@ -16,7 +16,7 @@ mamba env create -f environment.yaml
 This will create a conda environment called ```thermoMPNN```.
 
 ## Inference
-There are a few different ways to run inference with ThermoMPNN.
+There are a few different ways to run inference with ThermoMPNN all located in the ```analysis``` directory.
 
 ### From a PDB
 The simplest way is to use the ```custom_inference.py``` script to pass a custom PDB to ThermoMPNN for site-saturation mutagenesis.
