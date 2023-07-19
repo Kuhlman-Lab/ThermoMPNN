@@ -1,5 +1,7 @@
 # ThermoMPNN
-GNN trained to predict changes in thermodynamic stability for protein point mutants
+ThermoMPNN is a graph neural network (GNN) trained using transfer learning to predict changes in stability for protein point mutants.
+
+![ThermoMPNN Scheme](./images/SVG/thermoMPNN_scheme.svg)
 
 ## Colab Implementation
 For a user-friendly version of ThermoMPNN requiring no installation, use this [Colab notebook]().
