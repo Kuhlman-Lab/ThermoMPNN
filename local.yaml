@@ -1,0 +1,13 @@
+platform:
+  accel: "gpu"
+  cache_dir: "/nas/longleaf/home/dieckhau/protein-stability/v2_dataset_12072022/enzyme_stability_cache"
+  thermompnn_dir: "/nas/longleaf/home/dieckhau/ThermoMPNN/ThermoMPNN"
+
+data_loc:
+        megascale_csv: "/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data/mega_scale/Processed_K50_dG_datasets/Tsuboyama2023_Dataset2_Dataset3_20230416.csv"
+        megascale_splits: "/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data/mega_scale/mega_splits.pkl"
+        megascale_pdbs: "/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data/mega_scale/AlphaFold_model_PDBs/"
+
+        fireprot_csv: "/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data/fireprot/4_fireprotDB_bestpH.csv"
+        fireprot_splits: "/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data/fireprot/fireprot_splits.pkl"
+        fireprot_pdbs: "/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data/fireprot/pdbs/monomers/"
