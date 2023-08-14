@@ -3,7 +3,7 @@ ThermoMPNN is a graph neural network (GNN) trained using transfer learning to pr
 
 ![ThermoMPNN Scheme](./images/SVG/thermoMPNN_scheme.svg)
 
-For details on ThermoMPNN training and methodology, please see the accompanying [paper](). 
+For details on ThermoMPNN training and methodology, please see the accompanying [paper](https://www.biorxiv.org/content/10.1101/2023.07.27.550881v1). 
 
 ## Colab Implementation
 For a user-friendly version of ThermoMPNN requiring no installation, use this [Colab notebook](https://colab.research.google.com/drive/1OcT4eYwzxUFNlHNPk9_5uvxGNMVg3CFA#scrollTo=i06A5VI142NT).
