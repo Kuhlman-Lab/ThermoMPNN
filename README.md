@@ -43,3 +43,11 @@ ThermoMPNN model weights can be found in the ```models/``` directory. The follow
 ```
 - thermoMPNN_default.pt (best ThermoMPNN model trained on Megascale training dataset)
 ```
+
+### Dataset Availability
+The datasets used in this study can be found in the following locations:
+
+Fireprot: https://doi.org/10.5281/zenodo.8169288
+Megascale: https://doi.org/10.5281/zenodo.7401274
+S669: https://doi.org/10.1093/bib/bbab555
+SSYM, P53, Myoglobin, etc: https://protddg-bench.github.io
