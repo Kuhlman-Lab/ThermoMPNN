@@ -13,7 +13,7 @@ from torchmetrics import MeanSquaredError, R2Score, SpearmanCorrCoef, PearsonCor
 from omegaconf import OmegaConf
 
 from transfer_model import TransferModel
-from datasets import FireProtDataset, MegaScaleDataset, ComboDataset
+from datasets import FireProtDataset, MegaScaleDataset, ComboDataset, SSMDataset
 
 
 def get_metrics():
@@ -145,6 +145,9 @@ def train(cfg):
         elif dataset == 'megascale':
                 train_dataset = MegaScaleDataset(cfg, "train")
                 val_dataset = MegaScaleDataset(cfg, "val")
+        elif dataset == 'SSM':
+            train_dataset = SSMDataset(cfg, "train")
+            val_dataset = SSMDataset(cfg, "val")
         else:
             raise ValueError("Invalid dataset specified!")
     else:

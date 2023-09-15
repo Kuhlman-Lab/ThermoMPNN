@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import pickle
 import os
-from Bio import pairwise2
-from math import isnan
+from Bio import pairwise2, PDB, SeqUtils
+from math import isnan, log
 from tqdm import tqdm
 from dataclasses import dataclass
 from typing import Optional
@@ -15,7 +15,6 @@ from cache import cache
 
 
 ALPHABET = 'ACDEFGHIKLMNPQRSTVWY-'
-
 
 @cache(lambda cfg, pdb_file: pdb_file)
 def parse_pdb_cached(cfg, pdb_file):
@@ -56,6 +55,142 @@ def seq1_index_to_seq2_index(align, index):
         return None
 
     return seq2_idx
+
+
+def Kd_to_dG(Kd):
+    """Convert Kd values to dG"""
+
+    R = 1.987 / 1000  # kcal mol-1 K-1
+    T = 25 + 273  # Room temp
+
+    # Return 0 if Kd=0
+    if Kd == 0:
+        return 0
+
+    dG = -1 * R * T * log(Kd)
+
+    return dG
+
+
+def get_pdb_seq(pdb_path):
+    """Extract protein sequences for the A and B chains in a PDB file"""
+    pdbparser = PDB.PDBParser(QUIET=True)
+    structure = pdbparser.get_structure('chains', pdb_path)
+    chains = {chain.id: SeqUtils.seq1(''.join(residue.resname for residue in chain)) for chain in
+              structure.get_chains()}
+
+    chains['binder_seq'] = chains.pop('A')
+    chains['target_seq'] = chains.pop('B')
+
+    return chains
+
+
+class SSMDataset(torch.utils.data.Dataset):
+
+    def __init__(self, cfg, split):
+        self.cfg = cfg
+        self.split = split
+
+        filename = self.cfg.data_loc.ssm_sc
+        pdb_dir = self.cfg.data_loc.ssm_pdbs
+
+        df = pd.read_csv(filename, sep=' ')
+
+        # Drop any rows that have kdd_sketch = True
+        df = df[df['sketch_kd'] == False]
+
+        # Convert raw Kd values to dG
+        lb = df['lowest_conc'] / 10
+        ub = df['highest_conc'] * 1e8
+
+        df['kd_center'] = np.sqrt(df['kd_lb'].clip(lb, ub) * df['kd_ub'].clip(lb, ub))
+        df['parent_kd_center'] = np.sqrt(df['parent_kd_lb'].clip(lb, ub) * df['parent_kd_ub'].clip(lb, ub))
+
+        df['dg_center'] = df['kd_center'].apply(Kd_to_dG)
+        df['parent_dg_center'] = df['parent_kd_center'].apply(Kd_to_dG)
+
+        df['ddg'] = df['parent_dg_center'] - df['dg_center']
+
+        # Build df of target and binder seqs
+        seqs_df = df.drop_duplicates(subset=['ssm_parent']).copy()
+
+        self.pdb_dir = self.cfg.data_loc.ssm_pdbs
+        seqs_df['ssm_parent_path'] = f"{pdb_dir}/" + df['ssm_parent'] + '.pdb'
+
+        chains = seqs_df['ssm_parent_path'].apply(get_pdb_seq)
+        chains_df = chains.apply(pd.Series)
+
+        seqs_df = seqs_df.join(chains_df)
+
+        # Join the binder and target seqs to the main df
+
+        df = df.merge(seqs_df[['ssm_parent', 'target', 'binder_seq', 'target_seq']],
+                      on=['ssm_parent', 'target'], how='left')
+
+        # Split the mutatated residue position and mutation
+        df[['description', 'pos', 'mut_to']] = df['description'].str.split('__', expand=True)
+
+        # Drop unnecessary columns to save memory
+        # df = df.drop(columns=['kd_lb', 'kd_ub', 'parent_kd_lb', 'parent_kd_ub', 'kd_multiplier', 'dataset'])
+
+        self.seq_to_data = {}
+        seq_key = "binder_seq"
+
+        for binder_seq in df[seq_key].unique():
+            self.seq_to_data[binder_seq] = df.query(f"{seq_key} == @binder_seq").reset_index(drop=True)
+
+        self.df = df
+
+        with open(cfg.data_loc.ssm_splits, 'rb') as fh:
+            splits = pickle.load(fh)
+
+        self.split_wt_names = {
+            "train": [],
+            "val": [],
+            "test": [],
+            "all": []
+        }
+
+        self.wt_seqs = {}
+        self.mut_rows = {}
+
+        if self.split == 'all':
+            all_names = list(splits.values())
+            all_names = [j for sub in all_names for j in sub]
+            self.split_wt_names[self.split] = all_names
+
+        else:
+            self.split_wt_names[self.split] = splits[self.split]
+
+        self.wt_names = self.split_wt_names[self.split]
+
+        for wt_binder in self.wt_names:
+            self.mut_rows[wt_binder] = df.query("ssm_parent == @wt_binder").reset_index(drop=True)
+            self.wt_seqs[wt_binder] = self.mut_rows[wt_binder].binder_seq[0]
+
+    def __len__(self):
+        return len(self.wt_names)
+
+    def __getitem__(self, index):
+        """Batch retrieval function, each batch is a single protein"""
+
+        wt_name = self.wt_names[index]
+        seq = self.wt_seqs[wt_name]
+        data = self.seq_to_data[seq]
+
+        pdb_file = os.path.join(self.pdb_dir, wt_name + '.pdb')
+        pdb = parse_pdb_cached(self.cfg, pdb_file)
+
+        mutations = []
+        for i, row in data.iterrows():
+            # Not checking assertion since these sequences are aligned to PDB
+            pdb_idx = int(row.pos) - 1
+
+            ddG = None if row.ddg is None or isnan(row.ddg) else torch.tensor([row.ddg], dtype=torch.float32)
+            mut = Mutation(pdb_idx, pdb[0]['seq'][pdb_idx], row.mut_to, ddG, wt_name)
+            mutations.append(mut)
+
+        return pdb, mutations
 
 
 class MegaScaleDataset(torch.utils.data.Dataset):
@@ -212,7 +347,6 @@ class FireProtDataset(torch.utils.data.Dataset):
             self.mut_rows[wt_name] = df.query('pdb_id_corrected == @wt_name').reset_index(drop=True)
             self.wt_seqs[wt_name] = self.mut_rows[wt_name].pdb_sequence[0]
 
-
     def __len__(self):
         return len(self.wt_names)
 
@@ -335,5 +469,3 @@ class ComboDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         return self.mut_dataset[index]
-
-
