@@ -241,20 +241,65 @@ def main(cfg, args):
         }
     }
 
+    config_nola = {
+        'training': {
+            'num_workers': 8,
+            'learn_rate': 0.001,
+            'epochs': 100,
+            'lr_schedule': True,
+        },
+        'model': {
+            'hidden_dims': [64, 32],
+            'subtract_mut': True,
+            'num_final_layers': 2,
+            'freeze_weights': True,
+            'load_pretrained': True,
+            'lightattn': False,
+            'lr_schedule': True,
+        }
+    }
+
+    config_no_hid_dims = {
+        'training': {
+            'num_workers': 8,
+            'learn_rate': 0.001,
+            'epochs': 100,
+            'lr_schedule': True,
+        },
+        'model': {
+            'hidden_dims': [],
+            'subtract_mut': True,
+            'num_final_layers': 2,
+            'freeze_weights': True,
+            'load_pretrained': True,
+            'lightattn': True,
+            'lr_schedule': True,
+        }
+    }
+
     cfg = OmegaConf.merge(config, cfg)
+    cfg_nola = OmegaConf.merge(config_nola, cfg)
+    cfg_no_hid = OmegaConf.merge(config_no_hid_dims, cfg)
 
     models = {
         'ProteinMPNN': ProteinMPNNBaseline(cfg, version='v_48_020.pt'),
         "ThermoMPNN": get_trained_model(model_name='thermoMPNN_default.pt',
-                                        config=cfg)
-
+                                        config=cfg),
+        "ThermoMPNN-SSM": get_trained_model(model_name='thermompnn-ssm.ckpt',
+                                            config=cfg),
+        "SSM-Megascale": get_trained_model(model_name='ssm-megascale-combo.ckpt',
+                                           config=cfg),
+        # "SSM-Megascale-0-Hidden": get_trained_model(model_name='ssm-megascale-no-hid-dims.ckpt',
+        #                                             config=cfg_no_hid),
+        # "SSM-Megascale-No-LA": get_trained_model(model_name="ssm-megascale-no-la.ckpt",
+        #                                          config=cfg_nola)
     }
 
     misc_data_loc = '/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data'
     datasets = {
-        # "Megascale-test": MegaScaleDataset(cfg, "test"),
+        "Megascale-test": MegaScaleDataset(cfg, "test"),
         # "Fireprot-test": FireProtDataset(cfg, "test"),
-        "SSM": SSMDataset(cfg, "val")
+        "SSM": SSMDataset(cfg_no_hid, "test")
         # "Fireprot-homologue-free": FireProtDataset(cfg, "homologue-free"),
         # "P53": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/P53/pdbs'),
         #                        csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/P53/p53_clean.csv')),

@@ -145,7 +145,7 @@ def train(cfg):
         elif dataset == 'megascale':
                 train_dataset = MegaScaleDataset(cfg, "train")
                 val_dataset = MegaScaleDataset(cfg, "val")
-        elif dataset == 'SSM':
+        elif dataset == "ssm":
             train_dataset = SSMDataset(cfg, "train")
             val_dataset = SSMDataset(cfg, "val")
         else:
