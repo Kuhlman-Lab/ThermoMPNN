@@ -277,9 +277,9 @@ def main(cfg, args):
         }
     }
 
-    cfg = OmegaConf.merge(config, cfg)
     cfg_nola = OmegaConf.merge(config_nola, cfg)
     cfg_no_hid = OmegaConf.merge(config_no_hid_dims, cfg)
+    cfg = OmegaConf.merge(config, cfg)
 
     models = {
         'ProteinMPNN': ProteinMPNNBaseline(cfg, version='v_48_020.pt'),
@@ -297,9 +297,9 @@ def main(cfg, args):
 
     misc_data_loc = '/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data'
     datasets = {
-        "Megascale-test": MegaScaleDataset(cfg, "test"),
+        # "Megascale-test": MegaScaleDataset(cfg, "test"),
         # "Fireprot-test": FireProtDataset(cfg, "test"),
-        "SSM": SSMDataset(cfg_no_hid, "test")
+        "SSM": SSMDataset(cfg, "test")
         # "Fireprot-homologue-free": FireProtDataset(cfg, "homologue-free"),
         # "P53": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/P53/pdbs'),
         #                        csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/P53/p53_clean.csv')),
