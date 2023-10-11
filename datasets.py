@@ -57,11 +57,10 @@ def seq1_index_to_seq2_index(align, index):
     return seq2_idx
 
 
-def Kd_to_dG(Kd):
+def Kd_to_dG(Kd, T=298):
     """Convert Kd values to dG"""
 
     R = 1.987 / 1000  # kcal mol-1 K-1
-    T = 25 + 273  # Room temp
 
     # Return 0 if Kd=0
     if Kd == 0:
@@ -79,8 +78,8 @@ def get_pdb_seq(pdb_path):
     chains = {chain.id: SeqUtils.seq1(''.join(residue.resname for residue in chain)) for chain in
               structure.get_chains()}
 
-    chains['binder_seq'] = chains.pop('A')
-    chains['target_seq'] = chains.pop('B')
+    chains['binder_seq'] = chains[list(chains)[0]]
+    chains['target_seq'] = chains[list(chains)[1]]
 
     return chains
 
@@ -101,6 +100,7 @@ class SSMDataset(torch.utils.data.Dataset):
 
         # Drop wildtype variants
         df = df[df['is_native'] == False]
+        
 
         # Convert raw Kd values to dG
         lb = df['lowest_conc'] / 10
@@ -113,6 +113,9 @@ class SSMDataset(torch.utils.data.Dataset):
         df['parent_dg_center'] = df['parent_kd_center'].apply(Kd_to_dG)
 
         df['ddg'] = df['parent_dg_center'] - df['dg_center']
+        
+        # Drop ddg > 2.5
+        df = df[df['ddg'] < 2.5]
 
         # Build df of target and binder seqs
         seqs_df = df.drop_duplicates(subset=['ssm_parent']).copy()
