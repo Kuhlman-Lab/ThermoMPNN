@@ -19,6 +19,13 @@ mamba env create -f environment.yaml
 ```
 This will create a conda environment called ```thermoMPNN```.
 
+Note: be sure to check if pytorch installed correctly. If using mamba, you may have to reinstall it to make sure you get the right (CUDA-enabled) version:
+```
+mamba activate thermoMPNN
+mamba uninstall pytorch pytorch-cuda pytorch-mutex torchaudio torchvision
+mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 pytorch-lightning -c nvidia -c pytorch -c conda-forge
+```
+
 ## Inference
 There are a few different ways to run inference with ThermoMPNN all located in the ```analysis``` directory.
 
