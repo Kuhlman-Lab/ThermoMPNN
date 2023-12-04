@@ -19,11 +19,22 @@ mamba env create -f environment.yaml
 ```
 This will create a conda environment called ```thermoMPNN```.
 
-Note: be sure to check if pytorch installed correctly. If using mamba, you may have to reinstall it to make sure you get the right (CUDA-enabled) version:
+NOTE: installing from the .yaml file may cause pytorch to install incorrectly (CPU version instead of GPU version).
+
+Alternate installation instructions:
 ```
+# create and activate environment
+mamba create -n thermoMPNN python=3.10
 mamba activate thermoMPNN
-mamba uninstall pytorch pytorch-cuda pytorch-mutex torchaudio torchvision
+
+# install pytorch related packages
 mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 pytorch-lightning -c nvidia -c pytorch -c conda-forge
+
+# install all other packages
+mamba install joblib omegaconf pandas numpy tqdm mmseqs2 wandb biopython -c bioconda -c conda-forge -c anaconda
+
+# check for proper GPU recognition (should return True)
+python -c 'import torch; print(torch.cuda.is_available())'
 ```
 
 ## Inference
