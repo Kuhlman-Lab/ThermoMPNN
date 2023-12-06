@@ -78,11 +78,10 @@ def get_pdb_seq(pdb_path):
     chains = {chain.id: SeqUtils.seq1(''.join(residue.resname for residue in chain)) for chain in
               structure.get_chains()}
 
-    chains['binder_seq'] = chains[list(chains)[0]]
-    chains['target_seq'] = chains[list(chains)[1]]
+    chains['binder_seq'] = chains.pop('A')
+    chains['target_seq'] = chains.pop('B')
 
     return chains
-
 
 class SSMDataset(torch.utils.data.Dataset):
 
@@ -100,7 +99,6 @@ class SSMDataset(torch.utils.data.Dataset):
 
         # Drop wildtype variants
         df = df[df['is_native'] == False]
-        
 
         # Convert raw Kd values to dG
         lb = df['lowest_conc'] / 10

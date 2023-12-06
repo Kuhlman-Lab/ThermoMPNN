@@ -6,7 +6,7 @@ from omegaconf import OmegaConf
 import os
 import sys
 sys.path.append('../')
-from datasets import MegaScaleDataset, ddgBenchDataset, FireProtDataset, Mutation
+from datasets import MegaScaleDataset, ddgBenchDataset, FireProtDataset, SSMDataset, Mutation
 from protein_mpnn_utils import loss_smoothed, tied_featurize
 from train_thermompnn import TransferModelPL
 from model_utils import featurize
@@ -67,9 +67,10 @@ def main(cfg, args):
     misc_data_loc = '/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data'
 
     models = {
-        'ProteinMPNN': ProteinMPNNBaseline(cfg, version='v_48_020.pt'),
-        "ThermoMPNN": get_trained_model(model_name='example_training_mega_epoch=55_val_ddG_spearman=0.79.ckpt',
-                                        config=cfg)
+        # 'ProteinMPNN': ProteinMPNNBaseline(cfg, version='v_48_020.pt'),
+        "ThermoMPNN-SSM": get_trained_model(model_name='thermompnn-ssm.ckpt',
+                                        config=cfg),
+        # "ThermoMPNN-Combo": get_trained_model(model_name="ssm-megascale-combo.ckpt", config=cfg),
 
         # "Model-CV0": TransferModelPL.load_from_checkpoint('checkpoints/CV0_epoch=32_val_ddG_spearman=0.73.ckpt', cfg=cfg).model,
         # "Model-CV1": TransferModelPL.load_from_checkpoint('checkpoints/CV1_epoch=27_val_ddG_spearman=0.76.ckpt', cfg=cfg).model,
@@ -79,6 +80,7 @@ def main(cfg, args):
     }
 
     datasets = {
+        "SSM": SSMDataset(cfg, "all"),
         # "Megascale-test": MegaScaleDataset(cfg, "test"),
         # "Megascale-CV0": MegaScaleDataset(cfg, "cv_test_0"),
         # "Megascale-CV1": MegaScaleDataset(cfg, "cv_test_1"),
@@ -88,8 +90,8 @@ def main(cfg, args):
 
         # "Fireprot-test": FireProtDataset(cfg, "test")
         # "Fireprot-homologue-free": FireProtDataset(cfg, "homologue-free"),
-        "P53": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/P53/pdbs'),
-                               csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/P53/p53_clean.csv')),
+        # "P53": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/P53/pdbs'),
+                            #    csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/P53/p53_clean.csv')),
     }
 
     max_batches = None
