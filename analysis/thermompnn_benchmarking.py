@@ -8,7 +8,7 @@ from omegaconf import OmegaConf
 
 import sys
 sys.path.append('../')
-from datasets import MegaScaleDataset, FireProtDataset, ddgBenchDataset
+from datasets import MegaScaleDataset, FireProtDataset, ddgBenchDataset, SSMDataset
 from transfer_model import get_protein_mpnn
 from train_thermompnn import TransferModelPL
 from protein_mpnn_utils import tied_featurize
@@ -33,7 +33,6 @@ def compute_centrality(xyz, basis_atom: str = "CA", radius: float = 10.0, core_t
     #     'surface': num_neighbors <= surface_threshold,
     # }
     return num_neighbors
-
 
 class ProteinMPNNBaseline(nn.Module):
     """Class for running ProteinMPNN as a ddG proxy predictor"""
@@ -212,28 +211,29 @@ def main(cfg, args):
 
     models = {
         'ProteinMPNN': ProteinMPNNBaseline(cfg, version='v_48_020.pt'),
-        "ThermoMPNN": get_trained_model(model_name='thermoMPNN_default.pt',
+        "ThermoMPNN-SSM": get_trained_model(model_name='thermompnn-ssm.ckpt',
                                         config=cfg)
 
     }
 
-    misc_data_loc = '/nas/longleaf/home/dieckhau/protein-stability/enzyme-stability/data'
+    misc_data_loc = '/nas/longleaf/home/oem/'
     datasets = {
         # "Megascale-test": MegaScaleDataset(cfg, "test"),
         # "Fireprot-test": FireProtDataset(cfg, "test"),
 
         # "Fireprot-homologue-free": FireProtDataset(cfg, "homologue-free"),
-        "P53": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/P53/pdbs'),
-                               csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/P53/p53_clean.csv')),
-        "MYOGLOBIN": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/MYOGLOBIN/pdbs'),
-                               csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/MYOGLOBIN/myoglobin_clean.csv')),
+        # "P53": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/P53/pdbs'),
+        #                        csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/P53/p53_clean.csv')),
+        # "MYOGLOBIN": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/MYOGLOBIN/pdbs'),
+        #                        csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/MYOGLOBIN/myoglobin_clean.csv')),
 
-        "SSYM_dir": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/pdbs'),
-                               csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/ssym-5fold_clean_dir.csv')),
-        "SSYM_inv": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/pdbs'),
-                               csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/ssym-5fold_clean_inv.csv')),
-        "S669": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'S669/pdbs'),
-                               csv_fname=os.path.join(misc_data_loc, 'S669/s669_clean_dir.csv')),
+        # "SSYM_dir": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/pdbs'),
+        #                        csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/ssym-5fold_clean_dir.csv')),
+        # "SSYM_inv": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/pdbs'),
+        #                        csv_fname=os.path.join(misc_data_loc, 'protddg-bench-master/SSYM/ssym-5fold_clean_inv.csv')),
+        # "S669": ddgBenchDataset(cfg, pdb_dir=os.path.join(misc_data_loc, 'S669/pdbs'),
+        #                        csv_fname=os.path.join(misc_data_loc, 'S669/s669_clean_dir.csv')),
+        "SSM-Test": SSMDataset(cfg, "test"),
     }
 
     results = []
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--keep_preds', action='store_true', default=False, help='Save raw model predictions as csv')
     parser.add_argument('--centrality', action='store_true', default=False,
-                        help='Calculate centrality value for each residue (# neighbors). '
+                        help='Calculate centrality value for each residue (# neighbors) in first chain. '
                              'Only used if --keep_preds is enabled.')
 
     args = parser.parse_args()
