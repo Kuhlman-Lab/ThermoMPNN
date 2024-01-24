@@ -1273,8 +1273,9 @@ class ProteinMPNN(nn.Module):
             all_hidden.append(h_V)
 
         logits = self.W_out(h_V)
-        log_probs = F.log_softmax(logits, dim=-1)
+        log_probs = F.softmax(logits, dim=-1)
         return list(reversed(all_hidden)), h_S, log_probs
+
 
     def sample(self, X, randn, S_true, chain_mask, chain_encoding_all, residue_idx, mask=None, temperature=1.0,
                omit_AAs_np=None, bias_AAs_np=None, chain_M_pos=None, omit_AA_mask=None, pssm_coef=None, pssm_bias=None,
