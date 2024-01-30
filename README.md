@@ -3,7 +3,25 @@ ThermoMPNN is a graph neural network (GNN) trained using transfer learning to pr
 
 ![ThermoMPNN Scheme](./images/SVG/thermoMPNN_scheme.svg)
 
-For details on ThermoMPNN training and methodology, please see the accompanying [paper](https://www.biorxiv.org/content/10.1101/2023.07.27.550881v1). 
+For details on ThermoMPNN training and methodology, please see the accompanying [paper](https://www.pnas.org/doi/10.1073/pnas.2314853121). 
+
+## Citing this work
+If you use the code, please cite:
+```
+@article{
+doi:10.1073/pnas.2314853121,
+author = {Henry Dieckhaus  and Michael Brocidiacono  and Nicholas Z. Randolph  and Brian Kuhlman },
+title = {Transfer learning to leverage larger datasets for improved prediction of protein stability changes},
+journal = {Proceedings of the National Academy of Sciences},
+volume = {121},
+number = {6},
+pages = {e2314853121},
+year = {2024},
+doi = {10.1073/pnas.2314853121},
+URL = {https://www.pnas.org/doi/abs/10.1073/pnas.2314853121},
+eprint = {https://www.pnas.org/doi/pdf/10.1073/pnas.2314853121},
+}
+```
 
 ## Colab Implementation
 For a user-friendly version of ThermoMPNN requiring no installation, use this [Colab notebook](https://colab.research.google.com/drive/1OcT4eYwzxUFNlHNPk9_5uvxGNMVg3CFA#scrollTo=i06A5VI142NT).
