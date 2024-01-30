@@ -3,7 +3,7 @@ ThermoMPNN is a graph neural network (GNN) trained using transfer learning to pr
 
 ![ThermoMPNN Scheme](./images/SVG/thermoMPNN_scheme.svg)
 
-For details on ThermoMPNN training and methodology, please see the accompanying [paper](https://www.pnas.org/doi/10.1073/pnas.2314853121). 
+For details on ThermoMPNN training and methodology, please see the accompanying [paper](https://doi.org/10.1073/pnas.2314853121). 
 
 ## Citing this work
 If you use the code, please cite:
