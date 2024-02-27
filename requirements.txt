@@ -1,0 +1,10 @@
+torchmetrics
+pytorch-lightning
+biopython
+wandb
+mmseqs
+tqdm
+pandas
+numpy
+omegaconf
+joblib

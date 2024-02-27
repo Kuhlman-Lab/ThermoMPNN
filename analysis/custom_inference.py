@@ -113,9 +113,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--pdb', type=str, default='', help='Input PDB to use for custom inference')
     parser.add_argument('--chain', type=str, default='A', help='Chain in input PDB to use.')
-    parser.add_argument('--model_path', type=str, default='', help='filepath to model to use for inference')
+    parser.add_argument('--model_path', type=str, default='/home/ThermoMPNN/models/thermoMPNN_default.pt', help='filepath to model to use for inference')
 
     args = parser.parse_args()
-    cfg = OmegaConf.load("../local.yaml")
+
+    source_dir = os.getenv("THERMO_MPNN")
+    assert source_dir is not None, 'The Environment variable THERMO_MPNN is not set. Please set it to the source directory of the repo.'
+    local_yaml = os.path.join(source_dir, 'local.yaml')
+    cfg = OmegaConf.load(local_yaml)
+    cfg.platform.thermompnn_dir = source_dir
     with torch.no_grad():
         main(cfg, args)
