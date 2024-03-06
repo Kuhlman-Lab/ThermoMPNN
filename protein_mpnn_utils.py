@@ -1393,7 +1393,7 @@ class ProteinMPNN(nn.Module):
         h_E = self.W_e(E)
         # Encoder is unmasked self-attention
         mask_attend = gather_nodes(mask.unsqueeze(-1), E_idx).squeeze(-1)
-        mask_attend = mask.unsqueeze(-1) * mask_attendE
+        mask_attend = mask.unsqueeze(-1) * mask_attend
         for layer in self.encoder_layers:
             h_V, h_E = layer(h_V, h_E, E_idx, mask, mask_attend)
 
