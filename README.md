@@ -54,6 +54,7 @@ mamba install joblib omegaconf pandas numpy tqdm mmseqs2 wandb biopython -c bioc
 # check for proper GPU recognition (should return True)
 python -c 'import torch; print(torch.cuda.is_available())'
 ```
+Note: if you are planning to do any model training or complicated inference (i.e., from a CSV), you will need to update the ```local.yaml``` file to reflect dataset locations on your local system so that ThermoMPNN can find the data it needs. This step can be skipped if only running ```custom_inference.py```. 
 
 ## Inference
 There are a few different ways to run inference with ThermoMPNN all located in the ```analysis``` directory.
