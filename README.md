@@ -5,6 +5,8 @@ ThermoMPNN is a graph neural network (GNN) trained using transfer learning to pr
 
 For details on ThermoMPNN training and methodology, please see the accompanying [paper](https://doi.org/10.1073/pnas.2314853121). 
 
+UPDATE (August 2024): A new ThermoMPNN model has been released for prediction of ddG for double mutant pairs at a new repo, [ThermoMPNN-D](https://github.com/Kuhlman-Lab/ThermoMPNN-D). For details, see our new [preprint](https://www.biorxiv.org/content/10.1101/2024.08.20.608844v1)!
+
 ## Citing this work
 If you use the code, please cite:
 ```
