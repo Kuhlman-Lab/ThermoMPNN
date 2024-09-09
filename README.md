@@ -7,6 +7,8 @@ For details on ThermoMPNN training and methodology, please see the accompanying 
 
 UPDATE (August 2024): A new ThermoMPNN model has been released for prediction of ddG for double mutant pairs at a new repo, [ThermoMPNN-D](https://github.com/Kuhlman-Lab/ThermoMPNN-D). For details, see our new [preprint](https://www.biorxiv.org/content/10.1101/2024.08.20.608844v1)!
 
+UPDATE (September 2024): An experimental ThermoMPNN model has been added for indel (insertion/deletion) ddG prediction. This can be found at [ThermoMPNN-I](https://github.com/Kuhlman-Lab/ThermoMPNN-D/tree/ThermoMPNN-I). We include a new [Colab notebook](https://github.com/Kuhlman-Lab/ThermoMPNN-D/blob/ThermoMPNN-I/ThermoMPNN-I.ipynb) for ThermoMPNN-I as well. Note that this model has only had limited _in silico_ validation.
+
 ## Citing this work
 If you use the code, please cite:
 ```
