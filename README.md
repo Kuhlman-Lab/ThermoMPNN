@@ -5,6 +5,10 @@ ThermoMPNN is a graph neural network (GNN) trained using transfer learning to pr
 
 For details on ThermoMPNN training and methodology, please see the accompanying [paper](https://doi.org/10.1073/pnas.2314853121). 
 
+UPDATE (August 2024): A new ThermoMPNN model has been released for prediction of ddG for double mutant pairs at a new repo, [ThermoMPNN-D](https://github.com/Kuhlman-Lab/ThermoMPNN-D). For details, see our new [preprint](https://www.biorxiv.org/content/10.1101/2024.08.20.608844v1)!
+
+UPDATE (September 2024): An experimental ThermoMPNN model has been added for indel (insertion/deletion) ddG prediction. This can be found at [ThermoMPNN-I](https://github.com/Kuhlman-Lab/ThermoMPNN-D/tree/ThermoMPNN-I). We include a new [Colab notebook](https://github.com/Kuhlman-Lab/ThermoMPNN-D/blob/ThermoMPNN-I/ThermoMPNN-I.ipynb) for ThermoMPNN-I as well. Note that this model has only had limited _in silico_ validation.
+
 ## Citing this work
 If you use the code, please cite:
 ```
@@ -54,6 +58,7 @@ mamba install joblib omegaconf pandas numpy tqdm mmseqs2 wandb biopython -c bioc
 # check for proper GPU recognition (should return True)
 python -c 'import torch; print(torch.cuda.is_available())'
 ```
+Note: if you are planning to do any model training or complicated inference (i.e., from a CSV), you will need to update the ```local.yaml``` file to reflect dataset locations on your local system so that ThermoMPNN can find the data it needs. This step can be skipped if only running ```custom_inference.py```. 
 
 ## Inference
 There are a few different ways to run inference with ThermoMPNN all located in the ```analysis``` directory.
