@@ -20,4 +20,8 @@ repo_location="/proj/kuhl_lab/ThermoMPNN/analysis"
 
 cd $repo_location
 
-python custom_inference.py --pdb ../examples/2OCJ.pdb --chain A --model_path ../models/thermoMPNN_default.pt
+python custom_inference.py \
+    --pdb ../examples/2OCJ.pdb \
+    --chain A \
+    --model_path ../models/thermoMPNN_default.pt \
+    # --out_dir /nas/longleaf/home/dieckhau/

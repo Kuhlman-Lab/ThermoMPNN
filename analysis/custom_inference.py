@@ -104,8 +104,12 @@ def main(cfg, args):
                     row += 1
 
     print(raw_pred_df)
-    raw_pred_df.to_csv("ThermoMPNN_inference_%s.csv" % pdb_id)
-
+    if args.out_dir == './':
+        args.out_dir = os.getcwd()
+    assert os.path.isdir(args.out_dir), print(f"{args.out_dir} is not a valid directory.")
+    csv_file = os.path.join(args.out_dir, "ThermoMPNN_inference_%s.csv" % pdb_id)
+    raw_pred_df.to_csv(csv_file)
+    print(f'Saved ThermoMPNN output to {csv_file}')
 
 if __name__ == "__main__":
     import argparse
@@ -114,6 +118,7 @@ if __name__ == "__main__":
     parser.add_argument('--pdb', type=str, default='', help='Input PDB to use for custom inference')
     parser.add_argument('--chain', type=str, default='A', help='Chain in input PDB to use.')
     parser.add_argument('--model_path', type=str, default='', help='filepath to model to use for inference')
+    parser.add_argument('--out_dir', type=str, default='./', help='Output directory in which to save predictions.')
 
     args = parser.parse_args()
     cfg = OmegaConf.load("../local.yaml")

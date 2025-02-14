@@ -58,10 +58,10 @@ class TransferModel(nn.Module):
         hid_sizes += self.hidden_dims
         hid_sizes += [ VOCAB_DIM ]
 
-        print('MLP HIDDEN SIZES:', hid_sizes)
+        # print('MLP HIDDEN SIZES:', hid_sizes)
 
         if self.lightattn:
-            print('Enabled LightAttention')
+            # print('Enabled LightAttention')
             self.light_attention = LightAttention(embeddings_dim=HIDDEN_DIM*self.num_final_layers + EMBED_DIM )
 
         self.both_out = nn.Sequential()
