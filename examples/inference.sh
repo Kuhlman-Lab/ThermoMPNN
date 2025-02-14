@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J inference
-#SBATCH -t 30:00:00
-#SBATCH --partition=gpu
+#SBATCH -t 00:10:00
+#SBATCH --partition=volta-gpu
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --gres=gpu:1

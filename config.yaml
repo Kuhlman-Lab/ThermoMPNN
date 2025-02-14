@@ -1,7 +1,7 @@
-project: enzyme-stability
-name: example_training
+# project: enzyme-stability
+# name: example_training
 
-datasets: [fireprot]
+datasets: [megascale]
 
 training:
   num_workers: 12

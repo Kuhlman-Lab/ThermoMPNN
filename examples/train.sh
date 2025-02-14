@@ -16,7 +16,7 @@ conda activate thermoMPNN
 module load gcc
 module load cuda
 
-repo_location="~/ThermoMPNN/"
+repo_location="/proj/kuhl_lab/ThermoMPNN/"
 
 cd $repo_location
 
