@@ -7,7 +7,9 @@ from omegaconf import OmegaConf
 from Bio.PDB import PDBParser
 
 import sys
-sys.path.append('../')
+ABPATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(ABPATH))
+
 from datasets import Mutation
 from train_thermompnn import TransferModelPL
 from protein_mpnn_utils import tied_featurize, alt_parse_PDB
@@ -46,16 +48,20 @@ def main(cfg, args):
         }
     }
 
-    cfg = OmegaConf.merge(config, cfg)
+    cfg = OmegaConf.load(os.path.join(ABPATH, "..", "local.yaml"))
+    
+    # Convert config dict to OmegaConf object and merge with local.yaml
+    config_omega = OmegaConf.create(config)
+    merged_config = OmegaConf.merge(cfg, config_omega)
 
     # load the chosen model and dataset
     models = {
         "ThermoMPNN": get_trained_model(model_name=args.model_path,
-                                        config=cfg, override_custom=True)
+                                        config=merged_config, override_custom=True)
     }
 
     input_pdb = args.pdb
-    pdb_id = os.path.basename(input_pdb).rstrip('.pdb')
+    pdb_id = os.path.splitext(os.path.basename(input_pdb))[0]
 
     datasets = {
         pdb_id: args.pdb
@@ -64,8 +70,8 @@ def main(cfg, args):
     raw_pred_df = pd.DataFrame(columns=['Model', 'Dataset', 'ddG_pred', 'position', 'wildtype', 'mutation',])
     row = 0
     for name, model in models.items():
-        model = model.eval()
-        model = model.cuda()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = model.eval().to(device)
         for dataset_name, dataset in datasets.items():
             if len(args.chain) < 1:  # if unspecified, take first chain
                 chain = get_chains(input_pdb)[0]
@@ -106,7 +112,10 @@ def main(cfg, args):
     print(raw_pred_df)
     if args.out_dir == './':
         args.out_dir = os.getcwd()
-    assert os.path.isdir(args.out_dir), print(f"{args.out_dir} is not a valid directory.")
+    
+    # Create output directory if it doesn't exist
+    os.makedirs(args.out_dir, exist_ok=True)
+    
     csv_file = os.path.join(args.out_dir, "ThermoMPNN_inference_%s.csv" % pdb_id)
     raw_pred_df.to_csv(csv_file)
     print(f'Saved ThermoMPNN output to {csv_file}')
@@ -121,6 +130,28 @@ if __name__ == "__main__":
     parser.add_argument('--out_dir', type=str, default='./', help='Output directory in which to save predictions.')
 
     args = parser.parse_args()
-    cfg = OmegaConf.load("../local.yaml")
+    if args.model_path in ["", None]:
+        candidates = [
+            os.path.join(ABPATH, "..", "models", "thermoMPNN_default.ckpt"),
+            os.path.join(ABPATH, "..", "models", "thermoMPNN_default.pt"),
+        ]
+        # also scan common folders for any ckpt
+        for folder in ["models", "vanilla_model_weights"]:
+            folder_path = os.path.join(ABPATH, "..", folder)
+            if os.path.isdir(folder_path):
+                for fn in os.listdir(folder_path):
+                    if fn.endswith(".ckpt"):
+                        candidates.insert(0, os.path.join(folder_path, fn))
+
+        for c in candidates:
+            if os.path.isfile(c):
+                args.model_path = c
+                break
+
+        assert args.model_path not in ["", None], "No checkpoint found. Please pass --model_path to a .ckpt file."
+
+    # load config relative to this script location
+    cfg = OmegaConf.load(os.path.join(ABPATH, "..", "local.yaml"))
+
     with torch.no_grad():
         main(cfg, args)
