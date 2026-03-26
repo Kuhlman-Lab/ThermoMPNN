@@ -7,7 +7,8 @@ from torchmetrics import MeanSquaredError, R2Score, SpearmanCorrCoef, PearsonCor
 from omegaconf import OmegaConf
 
 import sys
-sys.path.append('../')
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.dirname(script_dir))
 from datasets import MegaScaleDataset, FireProtDataset, ddgBenchDataset
 from transfer_model import get_protein_mpnn
 from train_thermompnn import TransferModelPL
@@ -262,6 +263,9 @@ if __name__ == "__main__":
                              'Only used if --keep_preds is enabled.')
 
     args = parser.parse_args()
-    cfg = OmegaConf.load("../local.yaml")
+    try:
+        cfg = OmegaConf.load("local.yaml")
+    except FileNotFoundError:
+        cfg = OmegaConf.load("../local.yaml")
     with torch.no_grad():
         main(cfg, args)

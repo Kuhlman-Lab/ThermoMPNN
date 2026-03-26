@@ -7,7 +7,8 @@ from omegaconf import OmegaConf
 from Bio import pairwise2
 
 import sys
-sys.path.append('../')
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.dirname(script_dir))
 from datasets import seq1_index_to_seq2_index, FireProtDataset, MegaScaleDataset, ddgBenchDataset
 
 alphabet = 'ACDEFGHIKLMNPQRSTVWYX'
@@ -239,6 +240,9 @@ def main(cfg):
 
 
 if __name__ == "__main__":
-    cfg = OmegaConf.load("../local.yaml")
+    try:
+        cfg = OmegaConf.load("local.yaml")
+    except FileNotFoundError:
+        cfg = OmegaConf.load("../local.yaml")
     cfg = OmegaConf.merge(cfg, OmegaConf.from_cli())
     main(cfg)

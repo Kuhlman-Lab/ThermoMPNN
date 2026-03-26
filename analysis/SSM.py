@@ -5,7 +5,8 @@ from omegaconf import OmegaConf
 
 import os
 import sys
-sys.path.append('../')
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.dirname(script_dir))
 from datasets import MegaScaleDataset, ddgBenchDataset, FireProtDataset, Mutation
 from protein_mpnn_utils import loss_smoothed, tied_featurize
 from train_thermompnn import TransferModelPL
@@ -178,7 +179,10 @@ def main(cfg, args):
 
 
 if __name__ == "__main__":
-    cfg = OmegaConf.load("../local.yaml")
+    try:
+        cfg = OmegaConf.load("local.yaml")
+    except FileNotFoundError:
+        cfg = OmegaConf.load("../local.yaml")
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--pick_best', action='store_true', default=False,
