@@ -34,10 +34,12 @@ def _S_to_seq(S, mask):
     return seq
 
 
-def parse_PDB_biounits(x, atoms=['N', 'CA', 'C'], chain=None):
+def parse_PDB_biounits(lines, atoms=['N', 'CA', 'C'], chain=None):
     '''
-  input:  x = PDB filename
+  input:
           atoms = atoms to extract (optional)
+          lines = pre-read lines of the PDB file, which avoids re-parsing the
+                  same file once per candidate chain.
   output: (length, atoms, coords=(x,y,z)), sequence
   '''
 
@@ -65,41 +67,35 @@ def parse_PDB_biounits(x, atoms=['N', 'CA', 'C'], chain=None):
         return ["".join([aa_N_1.get(a, "-") for a in y]) for y in x]
 
     xyz, seq, min_resn, max_resn = {}, {}, 1e6, -1e6
-    for line in open(x, "rb"):
-        line = line.decode("utf-8", "ignore").rstrip()
+    for line in lines:
 
-        if line[:6] == "HETATM" and line[17:17 + 3] == "MSE":
-            line = line.replace("HETATM", "ATOM  ")
-            line = line.replace("MSE", "MET")
+        ch = line[21:22]
+        if ch == chain or chain is None:
+            atom = line[12:12 + 4].strip()
+            resi = line[17:17 + 3]
+            resn = line[22:22 + 5].strip()
+            x, y, z = [float(line[i:(i + 8)]) for i in [30, 38, 46]]
 
-        if line[:4] == "ATOM":
-            ch = line[21:22]
-            if ch == chain or chain is None:
-                atom = line[12:12 + 4].strip()
-                resi = line[17:17 + 3]
-                resn = line[22:22 + 5].strip()
-                x, y, z = [float(line[i:(i + 8)]) for i in [30, 38, 46]]
+            if resn[-1].isalpha():
+                resa, resn = resn[-1], int(resn[:-1]) - 1
+            else:
+                resa, resn = "", int(resn) - 1
+            #         resn = int(resn)
+            if resn < min_resn:
+                min_resn = resn
+            if resn > max_resn:
+                max_resn = resn
+            if resn not in xyz:
+                xyz[resn] = {}
+            if resa not in xyz[resn]:
+                xyz[resn][resa] = {}
+            if resn not in seq:
+                seq[resn] = {}
+            if resa not in seq[resn]:
+                seq[resn][resa] = resi
 
-                if resn[-1].isalpha():
-                    resa, resn = resn[-1], int(resn[:-1]) - 1
-                else:
-                    resa, resn = "", int(resn) - 1
-                #         resn = int(resn)
-                if resn < min_resn:
-                    min_resn = resn
-                if resn > max_resn:
-                    max_resn = resn
-                if resn not in xyz:
-                    xyz[resn] = {}
-                if resa not in xyz[resn]:
-                    xyz[resn][resa] = {}
-                if resn not in seq:
-                    seq[resn] = {}
-                if resa not in seq[resn]:
-                    seq[resn][resa] = resi
-
-                if atom not in xyz[resn][resa]:
-                    xyz[resn][resa][atom] = np.array([x, y, z])
+            if atom not in xyz[resn][resa]:
+                xyz[resn][resa][atom] = np.array([x, y, z])
 
     # convert to numpy arrays, fill in missing values
     seq_, xyz_ = [], []
@@ -126,14 +122,6 @@ def parse_PDB_biounits(x, atoms=['N', 'CA', 'C'], chain=None):
 def parse_PDB(path_to_pdb, input_chain_list=None, ca_only=False, side_chains=False):
     c = 0
     pdb_dict_list = []
-    init_alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-                     'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                     'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-    extra_alphabet = [str(item) for item in list(np.arange(300))]
-    chain_alphabet = init_alphabet + extra_alphabet
-
-    if input_chain_list:
-        chain_alphabet = input_chain_list
 
     biounit_names = [path_to_pdb]
     for biounit in biounit_names:
@@ -146,6 +134,23 @@ def parse_PDB(path_to_pdb, input_chain_list=None, ca_only=False, side_chains=Fal
         concat_O = []
         concat_mask = []
         coords_dict = {}
+
+        with open(biounit, 'rt') as f:
+            lines = []
+            for line in f:
+                if line[:6] == "HETATM" and line[17:17 + 3] == "MSE":
+                    line = line.replace("HETATM", "ATOM  ")
+                    line = line.replace("MSE", "MET")
+                if line[:4] == "ATOM":
+                    lines.append(line)
+
+        if input_chain_list:
+            chain_alphabet = input_chain_list
+        else:
+            # parse_PDB_biounits() gets called once for every letter in chain_alphabet(),
+            # so we want to only call it for chains that exist in our file
+            chain_alphabet = sorted(set(line[21:22] for line in lines))
+
         for letter in chain_alphabet:
             if ca_only:
                 sidechain_atoms = ['CA']
@@ -157,7 +162,7 @@ def parse_PDB(path_to_pdb, input_chain_list=None, ca_only=False, side_chains=Fal
                                    "NZ", "CZ", "CZ2", "CZ3", "CH2", "OH", "NH1", "NH2"]
             else:
                 sidechain_atoms = ['N', 'CA', 'C', 'O']
-            xyz, seq = parse_PDB_biounits(biounit, atoms=sidechain_atoms, chain=letter)
+            xyz, seq = parse_PDB_biounits(lines, atoms=sidechain_atoms, chain=letter)
             if type(xyz) != str:
                 concat_seq += seq[0]
                 my_dict['seq_chain_' + letter] = seq[0]
