@@ -60,6 +60,27 @@ python -c 'import torch; print(torch.cuda.is_available())'
 ```
 Note: if you are planning to do any model training or complicated inference (i.e., from a CSV), you will need to update the ```local.yaml``` file to reflect dataset locations on your local system so that ThermoMPNN can find the data it needs. This step can be skipped if only running ```custom_inference.py```. 
 
+## Alternate installation with uv
+
+The `uv` package manager is faster and more convenient for many workflows. To install ThermoMPNN with `uv`:
+```
+# First install uv itself:
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Then install your uv venv (e.g., for CUDA 12.1):
+uv sync --extra cu121
+
+# For CUDA 12.4, use:
+uv sync --extra cu124
+
+# For CPU install use:
+uv sync --extra cpu
+
+# To run with uv, use a command like:
+uv run --extra cu121 python custom_inference.py -h
+```
+
+
 ## Inference
 There are a few different ways to run inference with ThermoMPNN all located in the ```analysis``` directory.
 
