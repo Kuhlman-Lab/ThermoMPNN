@@ -52,6 +52,7 @@ def main(cfg, args):
     # Convert config dict to OmegaConf object and merge with local.yaml
     config_omega = OmegaConf.create(config)
     merged_config = OmegaConf.merge(cfg, config_omega)
+    merged_config.platform.thermompnn_dir = os.path.dirname(ABPATH)
 
     # load the chosen model and dataset
     models = {
@@ -151,6 +152,5 @@ if __name__ == "__main__":
 
     # load config relative to this script location
     cfg = OmegaConf.load(os.path.join(ABPATH, "..", "local.yaml"))
-
     with torch.no_grad():
         main(cfg, args)
