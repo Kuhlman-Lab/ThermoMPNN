@@ -49,32 +49,62 @@ class TransferModelPL(pl.LightningModule):
 
     def shared_eval(self, batch, batch_idx, prefix):
 
-        assert len(batch) == 1
-        mut_pdb, mutations = batch[0]
-        pred, _ = self(mut_pdb, mutations)
-
         ddg_mses = []
-        for mut, out in zip(mutations, pred):
-            if mut.ddG is not None:
-                ddg_mses.append(F.mse_loss(out["ddG"], mut.ddG))
-                for metric in self.metrics[f"{prefix}_metrics"]["ddG"].values():
-                    metric.update(out["ddG"], mut.ddG)
+        preds, targets = [], []
+        for mut_pdb, mutations in batch:
+            pred, _ = self(mut_pdb, mutations)
+            for mut, out in zip(mutations, pred):
+                if mut.ddG is not None:
+                    ddg_mses.append(F.mse_loss(out["ddG"], mut.ddG))
+                    preds.append(out["ddG"].reshape(-1))
+                    targets.append(mut.ddG.reshape(-1))
+
+        # Update each metric once per batch with concatenated tensors. Updating per-mutation
+        # makes SpearmanCorrCoef's list state grow by one tensor per mutation, which (combined
+        # with Lightning moving the live metric to device every step) causes an O(N^2) slowdown.
+        if preds:
+            batch_preds = torch.cat(preds)
+            batch_targets = torch.cat(targets)
+            for metric in self.metrics[f"{prefix}_metrics"]["ddG"].values():
+                metric.update(batch_preds, batch_targets)
+
+        # Per-step logging for debugging -- use with caution!
+        # if batch_idx % 10 == 0:
+        #     output = "ddG"
+        #     for name, metric in self.metrics[f"{prefix}_metrics"][output].items():
+        #         try:
+        #             value = metric.compute()
+        #         except ValueError:
+        #             continue
+        #         self.log(f"{prefix}_{output}_{name}", value, prog_bar=True, on_step=True, on_epoch=True)
 
         loss = 0.0 if len(ddg_mses) == 0 else torch.stack(ddg_mses).mean()
-        on_step = False
-        on_epoch = not on_step
-
-        output = "ddG"
-        for name, metric in self.metrics[f"{prefix}_metrics"][output].items():
-            try:
-                metric.compute()
-            except ValueError:
-                continue
-            self.log(f"{prefix}_{output}_{name}", metric, prog_bar=True, on_step=on_step, on_epoch=on_epoch,
-                        batch_size=len(batch))
         if loss == 0.0:
             return None
         return loss
+
+    def _log_epoch_metrics(self, prefix):
+        # Compute and log metrics once per epoch. Passing the live Metric object to self.log
+        # registers it in Lightning's result collection, which moves its (growing) state to the
+        # device on every step -- an O(N^2) cost. Logging plain scalars here avoids that.
+        output = "ddG"
+        for name, metric in self.metrics[f"{prefix}_metrics"][output].items():
+            try:
+                value = metric.compute()
+            except ValueError:
+                metric.reset()
+                continue
+            self.log(f"{prefix}_{output}_{name}", value, prog_bar=True, on_step=False, on_epoch=True)
+            metric.reset()
+
+    def on_train_epoch_end(self):
+        self._log_epoch_metrics('train')
+
+    def on_validation_epoch_end(self):
+        self._log_epoch_metrics('val')
+
+    def on_test_epoch_end(self):
+        self._log_epoch_metrics('test')
 
     def training_step(self, batch, batch_idx):
         return self.shared_eval(batch, batch_idx, 'train')
@@ -111,7 +141,8 @@ class TransferModelPL(pl.LightningModule):
         opt = torch.optim.AdamW(param_list, lr=self.learn_rate)
 
         if self.lr_schedule: # enable additional lr scheduler conditioned on val ddG mse
-            lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=opt, verbose=True, mode='min', factor=0.5)
+            # lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=opt, verbose=True, mode='min', factor=0.5)
+            lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=opt, mode='min', factor=0.5)
             return {
                 'optimizer': opt,
                 'lr_scheduler': lr_sched,
@@ -156,8 +187,10 @@ def train(cfg):
     else:
         train_workers, val_workers = 0, 0
 
-    train_loader = DataLoader(train_dataset, collate_fn=lambda x: x, shuffle=True, num_workers=train_workers)
-    val_loader = DataLoader(val_dataset, collate_fn=lambda x: x, num_workers=val_workers)
+    batch_size = cfg.training.batch_size if 'batch_size' in cfg.training else 1
+
+    train_loader = DataLoader(train_dataset, collate_fn=lambda x: x, shuffle=True, num_workers=train_workers, batch_size=batch_size)
+    val_loader = DataLoader(val_dataset, collate_fn=lambda x: x, num_workers=val_workers, batch_size=batch_size)
 
     model_pl = TransferModelPL(cfg)
     model_pl.stage = 1

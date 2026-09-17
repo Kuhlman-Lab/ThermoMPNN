@@ -17,7 +17,8 @@ from cache import cache
 ALPHABET = 'ACDEFGHIKLMNPQRSTVWY-'
 
 
-@cache(lambda cfg, pdb_file: pdb_file)
+# Caching seems to make things slower rather than faster!
+#@cache(lambda cfg, pdb_file: pdb_file)
 def parse_pdb_cached(cfg, pdb_file):
     return parse_PDB(pdb_file)
 
@@ -119,13 +120,19 @@ class MegaScaleDataset(torch.utils.data.Dataset):
 
         self.wt_names = self.split_wt_names[self.split]
 
-        for wt_name in tqdm(self.wt_names):
-            wt_rows = df.query('WT_name == @wt_name and mut_type == "wt"').reset_index(drop=True)
-            self.mut_rows[wt_name] = df.query('WT_name == @wt_name and mut_type != "wt"').reset_index(drop=True)
-            if type(cfg.reduce) is float and self.split == 'train':
-                self.mut_rows[wt_name] = self.mut_rows[wt_name].sample(frac=float(cfg.reduce), replace=False)
+        print("Loading data...")
+        mut_rows = df[(df.mut_type != "wt") & (df.WT_name.isin(self.wt_names))]
+        # Change in behavior:  we subsample ALL mutants rather than per grouping
+        # This also works better when there are few mutants per wildtype
+        if type(cfg.reduce) is float and self.split == 'train':
+            mut_rows = mut_rows.sample(frac=float(cfg.reduce), replace=False)
+        self.mut_rows = dict(iter(mut_rows.groupby('WT_name')))
 
-            self.wt_seqs[wt_name] = wt_rows.aa_seq[0]
+        # If we reduced the number of mutations, some WT won't be needed any more
+        self.wt_names = list(self.mut_rows.keys())
+        wt_rows = df[(df.mut_type == "wt") & (df.WT_name.isin(self.wt_names))]
+        self.wt_seqs = dict(zip(wt_rows.WT_name, wt_rows.aa_seq))
+        print("Done")
 
     def __len__(self):
         return len(self.wt_names)

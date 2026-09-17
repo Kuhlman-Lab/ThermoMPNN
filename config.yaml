@@ -7,6 +7,7 @@ training:
   num_workers: 12
   learn_rate: 0.001
   epochs: 100
+  batch_size: 1
   lr_schedule: true
   # mpnn_learn_rate: 0.001
   # two_stage: true
